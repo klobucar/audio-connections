@@ -393,7 +393,7 @@ function render() {
     if (solvedThemes.has(track.themeIdx)) tile.classList.add('solved');
     tile.innerHTML = `
       <input class="tile-label-input" type="text"
-        placeholder="Track ${idx + 1}" 
+        placeholder="Track ${idx + 1}"
         data-note="${track.id}"
         value="${escapeHtml(notes.get(track.id) || '')}">
       <button class="play-btn" data-id="${track.id}">▶</button>
