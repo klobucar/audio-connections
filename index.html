@@ -183,6 +183,7 @@
   .solved-track-item { display: block; margin-top: 2px; }
   .solved-title { color: #1a1a1a; }
   .solved-artist { color: #4a4a4a; }
+  .solved-note { color: #4a4a4a; font-style: italic; }
   .mistakes-row {
     max-width: 720px;
     margin: 0 auto 12px;
@@ -269,38 +270,38 @@ const puzzles = [
     themes: [
       {
         theme: "Heaven in the title",
-        trackIds: [
-          31739774,    // Just Like Heaven — The Cure
-          580708180,   // Stairway to Heaven — Led Zeppelin
-          1648144423,  // Tears in Heaven — Eric Clapton
-          1440771048,  // Heaven Is a Place on Earth — Belinda Carlisle
+        tracks: [
+          { id: 31739774,   artist: "The Cure",         title: "Just Like Heaven" },
+          { id: 580708180,  artist: "Led Zeppelin",     title: "Stairway to Heaven" },
+          { id: 1648144423, artist: "Eric Clapton",     title: "Tears in Heaven" },
+          { id: 1440771048, artist: "Belinda Carlisle", title: "Heaven Is a Place on Earth" }
         ]
       },
       {
         theme: "Canadian artists",
-        trackIds: [
-          323395690,   // My Happy Ending — Avril Lavigne
-          1440661545,  // Baby — Justin Bieber
-          1440823965,  // Summer of '69 — Bryan Adams
-          1440656027,  // Tom Sawyer — Rush
+        tracks: [
+          { id: 323395690,  artist: "Avril Lavigne",  title: "My Happy Ending" },
+          { id: 1440661545, artist: "Justin Bieber",  title: "Baby" },
+          { id: 1440823965, artist: "Bryan Adams",    title: "Summer of '69" },
+          { id: 1440656027, artist: "Rush",           title: "Tom Sawyer" }
         ]
       },
       {
         theme: "Bands with repeated names",
-        trackIds: [
-          696670364,   // It's My Life — Talk Talk
-          693610953,   // Hungry Like the Wolf — Duran Duran
-          1445308818,  // Maps — Yeah Yeah Yeahs
-          1440843876,  // We Got the Beat — The Go-Go's
+        tracks: [
+          { id: 696670364,  artist: "Talk Talk",      title: "It's My Life" },
+          { id: 693610953,  artist: "Duran Duran",    title: "Hungry Like the Wolf" },
+          { id: 1445308818, artist: "Yeah Yeah Yeahs", title: "Maps" },
+          { id: 1440843876, artist: "The Go-Go's",    title: "We Got the Beat" }
         ]
       },
       {
         theme: "Bands of all siblings",
-        trackIds: [
-          1440790544,  // MMMBop — Hanson
-          1440912109,  // ABC — Jackson 5
-          1445664553,  // How Deep Is Your Love — Bee Gees
-          121052796,   // We Are Family — Sister Sledge
+        tracks: [
+          { id: 1440790544, artist: "Hanson",        title: "MMMBop" },
+          { id: 1440912109, artist: "Jackson 5",     title: "ABC" },
+          { id: 1445664553, artist: "Bee Gees",      title: "How Deep Is Your Love" },
+          { id: 121052796,  artist: "Sister Sledge", title: "We Are Family" }
         ]
       }
     ]
@@ -311,38 +312,38 @@ const puzzles = [
     themes: [
       {
         theme: "Songs made for movies",
-        trackIds: [
-          507536740,   // My Heart Will Go On — Céline Dion (Titanic)
-          254685026,   // Eye of the Tiger — Survivor (Rocky III)
-          1440903439,  // Lose Yourself — Eminem (8 Mile)
-          203304387,   // Mrs. Robinson — Simon & Garfunkel (The Graduate)
+        tracks: [
+          { id: 507536740,  artist: "Céline Dion",        title: "My Heart Will Go On", note: "Titanic" },
+          { id: 254685026,  artist: "Survivor",           title: "Eye of the Tiger",    note: "Rocky III" },
+          { id: 1440903439, artist: "Eminem",             title: "Lose Yourself",       note: "8 Mile" },
+          { id: 203304387,  artist: "Simon & Garfunkel",  title: "Mrs. Robinson",       note: "The Graduate" }
         ]
       },
       {
         theme: "Sense in the title",
-        trackIds: [
-          1440783625,  // Smells Like Teen Spirit — Nirvana (smell)
-          217273922,   // I Can See Clearly Now — Johnny Nash (sight)
-          1550208949,  // Touch My Body — Mariah Carey (touch)
-          1444106658,  // I Heard It Through the Grapevine — Marvin Gaye (hearing)
+        tracks: [
+          { id: 1440783625, artist: "Nirvana",       title: "Smells Like Teen Spirit",        note: "smell" },
+          { id: 217273922,  artist: "Johnny Nash",   title: "I Can See Clearly Now",          note: "sight" },
+          { id: 1550208949, artist: "Mariah Carey",  title: "Touch My Body",                  note: "touch" },
+          { id: 1444106658, artist: "Marvin Gaye",   title: "I Heard It Through the Grapevine", note: "hearing" }
         ]
       },
       {
         theme: "Cover of a Beatles song",
-        trackIds: [
-          1434916256,  // With a Little Help from My Friends — Joe Cocker (1968)
-          1469582093,  // We Can Work It Out — Stevie Wonder (1970)
-          995304388,   // Help! — Tina Turner (1984)
-          1738363769,  // BLACKBIIRD — Beyoncé (2024)
+        tracks: [
+          { id: 1434916256, artist: "Joe Cocker",    title: "With a Little Help from My Friends" },
+          { id: 1469582093, artist: "Stevie Wonder", title: "We Can Work It Out" },
+          { id: 995304388,  artist: "Tina Turner",   title: "Help!" },
+          { id: 1738363769, artist: "Beyoncé",       title: "BLACKBIIRD" }
         ]
       },
       {
         theme: "Profession in the name",
-        trackIds: [
-          1752214923,  // Espresso — Sabrina Carpenter
-          169628364,   // Two Princes — Spin Doctors
-          1440797616,  // Roxanne — The Police
-          20922894,    // Such Great Heights — The Postal Service
+        tracks: [
+          { id: 1752214923, artist: "Sabrina Carpenter",  title: "Espresso" },
+          { id: 169628364,  artist: "Spin Doctors",       title: "Two Princes" },
+          { id: 1440797616, artist: "The Police",         title: "Roxanne" },
+          { id: 20922894,   artist: "The Postal Service", title: "Such Great Heights" }
         ]
       }
     ]
@@ -396,7 +397,7 @@ function jsonpLookup(itunesId, timeoutMs = 10000) {
   });
 }
 
-async function fetchTrack(itunesId, attempt = 1) {
+async function fetchPreviewUrl(itunesId, attempt = 1) {
   const MAX_ATTEMPTS = 6;
   try {
     const result = await jsonpLookup(itunesId);
@@ -404,16 +405,12 @@ async function fetchTrack(itunesId, attempt = 1) {
       console.warn(`No preview for ID ${itunesId}`);
       return null;
     }
-    return {
-      previewUrl: result.previewUrl,
-      trackName: result.trackName,
-      artistName: result.artistName,
-    };
+    return result.previewUrl;
   } catch (e) {
     if (attempt < MAX_ATTEMPTS) {
       const delay = Math.min(500 * Math.pow(2, attempt - 1), 10000);
       await sleep(delay);
-      return fetchTrack(itunesId, attempt + 1);
+      return fetchPreviewUrl(itunesId, attempt + 1);
     }
     console.warn(`Failed to fetch ID ${itunesId} after ${attempt} attempts:`, e);
     return null;
@@ -466,20 +463,27 @@ async function init() {
   const status = document.getElementById('status');
   const all = [];
   for (let t = 0; t < puzzle.length; t++) {
-    for (const itunesId of puzzle[t].trackIds) all.push({ themeIdx: t, itunesId });
+    for (const trk of puzzle[t].tracks) all.push({ themeIdx: t, ...trk });
   }
 
-  const trackData = [];
+  const previewUrls = [];
   for (let i = 0; i < all.length; i++) {
     if (myGen !== initGeneration) return;
     status.textContent = `Loading previews… (${i + 1}/${all.length})`;
-    trackData.push(await fetchTrack(all[i].itunesId));
+    previewUrls.push(await fetchPreviewUrl(all[i].id));
     if (i < all.length - 1) await sleep(150);
   }
   if (myGen !== initGeneration) return;
 
   tracks = all
-    .map((x, i) => trackData[i] ? { id: i, themeIdx: x.themeIdx, ...trackData[i] } : null)
+    .map((x, i) => previewUrls[i] ? {
+      id: i,
+      themeIdx: x.themeIdx,
+      previewUrl: previewUrls[i],
+      artist: x.artist,
+      title: x.title,
+      note: x.note,
+    } : null)
     .filter(t => t !== null);
 
   status.textContent = tracks.length < all.length
@@ -694,12 +698,15 @@ function renderSolved() {
   div.innerHTML = '';
   for (const themeIdx of solvedThemes) {
     const themeTracks = tracks.filter(t => t.themeIdx === themeIdx);
-    const trackList = themeTracks.map(t =>
-      `<div class="solved-track-item">
-        <span class="solved-title">${escapeHtml(t.trackName || '?')}</span>
-        <span class="solved-artist">— ${escapeHtml(t.artistName || '?')}</span>
-      </div>`
-    ).join('');
+    const trackList = themeTracks.map(t => {
+      const noteHtml = t.note
+        ? ` <span class="solved-note">(${escapeHtml(t.note)})</span>`
+        : '';
+      return `<div class="solved-track-item">
+        <span class="solved-title">${escapeHtml(t.title || '?')}</span>
+        <span class="solved-artist">— ${escapeHtml(t.artist || '?')}</span>${noteHtml}
+      </div>`;
+    }).join('');
     const row = document.createElement('div');
     row.className = `solved-row theme-${themeIdx}`;
     row.innerHTML = `<div class="solved-theme">${escapeHtml(puzzle[themeIdx].theme)}</div>
