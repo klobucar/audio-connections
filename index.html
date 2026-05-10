@@ -80,7 +80,7 @@
     padding: 38px 8px 8px 8px;
     text-align: center;
     transition: all 0.15s;
-    min-height: 140px;
+    min-height: 110px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -171,30 +171,39 @@
   .tile-label-input:not(:placeholder-shown) {
     background-image: none;
   }
+  .tile-actions {
+    display: flex;
+    gap: 4px;
+    width: 100%;
+  }
   .play-btn {
-    background: linear-gradient(180deg, #5599df 0%, #2870be 100%);
-    border: 1px solid #1d5396;
-    color: white;
+    background: linear-gradient(180deg, #4a4a4a 0%, #2a2a2a 100%);
+    border: 1px solid #1a1a1a;
+    color: #ddd;
     padding: 6px 8px;
     border-radius: 3px;
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
-    width: 100%;
+    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
     z-index: 1;
     box-shadow:
-      inset 0 1px 0 rgba(255,255,255,0.25),
-      inset 0 -1px 0 rgba(0,0,0,0.25),
+      inset 0 1px 0 rgba(255,255,255,0.1),
+      inset 0 -1px 0 rgba(0,0,0,0.3),
       0 1px 2px rgba(0,0,0,0.4);
   }
-  .play-btn:hover { background: linear-gradient(180deg, #66a8ec 0%, #3782cf 100%); }
+  .play-btn:hover { background: linear-gradient(180deg, #595959 0%, #383838 100%); color: #fff; }
   .play-btn.playing {
     background: linear-gradient(180deg, #d57070 0%, #a83838 100%);
     border-color: #6a1c1c;
+    color: white;
+  }
+  .play-btn.playing:hover {
+    background: linear-gradient(180deg, #e58080 0%, #b84444 100%);
   }
   .play-btn:disabled {
     background: linear-gradient(180deg, #555 0%, #333 100%);
@@ -205,13 +214,13 @@
     background: linear-gradient(180deg, #4a4a4a 0%, #2a2a2a 100%);
     border: 1px solid #1a1a1a;
     color: #ddd;
-    padding: 4px 8px;
+    padding: 6px 8px;
     border-radius: 3px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.4px;
     cursor: pointer;
-    width: 100%;
+    flex: 1;
     position: relative;
     z-index: 1;
     box-shadow:
@@ -706,10 +715,10 @@ function render() {
         data-note="${track.id}"
         value="${escapeHtml(notes.get(track.id) || '')}">
       <div class="reels"><span class="reel"></span><span class="reel"></span></div>
-      <button class="play-btn" data-id="${track.id}">▶</button>
-      <button class="select-btn" data-select="${track.id}">
-        ${selected.has(track.id) ? 'Selected' : 'Select'}
-      </button>`;
+      <div class="tile-actions">
+        <button class="play-btn" data-id="${track.id}">▶</button>
+        <button class="select-btn" data-select="${track.id}">Select</button>
+      </div>`;
     grid.appendChild(tile);
   });
 
