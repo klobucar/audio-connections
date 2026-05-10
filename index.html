@@ -71,22 +71,57 @@
     margin: 0 auto 20px;
   }
   .tile {
-    background: #2a2a2a;
-    border: 2px solid #333;
-    border-radius: 8px;
-    padding: 8px 6px;
+    background: linear-gradient(180deg, #3a3a3a 0%, #1d1d1d 100%);
+    border: 2px solid #0e0e0e;
+    border-radius: 6px;
+    padding: 8px 8px;
     text-align: center;
     transition: all 0.15s;
-    min-height: 120px;
+    min-height: 140px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
     gap: 4px;
+    position: relative;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.07),
+      inset 0 -1px 0 rgba(0,0,0,0.5),
+      0 2px 5px rgba(0,0,0,0.4);
+  }
+  .reels {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 80%;
+    height: 18px;
+    position: relative;
+    z-index: 0;
+  }
+  .reel {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle, #050505 0%, #050505 22%, transparent 22%),
+      repeating-conic-gradient(
+        from 0deg,
+        #1a1a1a 0deg, #1a1a1a 52deg,
+        #8a8a8a 52deg, #8a8a8a 60deg
+      );
+    border: 1px solid #050505;
+    box-shadow: inset 0 0 1px rgba(255,255,255,0.15);
+  }
+  @keyframes cassette-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+  .tile.playing .reel {
+    animation: cassette-spin 1.5s linear infinite;
   }
   .tile.selected {
     border-color: #4a9eff;
-    background: #1e3a5f;
+    background: linear-gradient(180deg, #2a4a7a 0%, #1e3a5f 100%);
   }
   .tile.exiting {
     opacity: 0;
@@ -95,58 +130,86 @@
     pointer-events: none;
   }
   .tile-label-input {
-    background: transparent;
-    border: 1px solid transparent;
-    color: #f0f0f0;
-    font-size: 12px;
-    font-weight: 600;
+    background-color: #ddd5c0;
+    border: 1px solid #6a5a3a;
+    color: #1a1a1a;
+    font-size: 11px;
+    font-weight: 700;
     text-align: center;
     padding: 4px 6px;
-    border-radius: 4px;
+    border-radius: 2px;
     width: 100%;
-    font-family: inherit;
-	/* add pencil to indicate that titles can be edited */
-	background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%23A0A0A0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>');
-  background-repeat: no-repeat;
-  background-position: right 8px center;
+    font-family: 'Courier New', ui-monospace, monospace;
+    letter-spacing: 0.3px;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,255,255,0.4);
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>');
+    background-repeat: no-repeat;
+    background-position: right 5px center;
   }
-  .tile-label-input::placeholder { color: #888; font-weight: 600; }
-  .tile-label-input:hover { border-color: #444; }
+  .tile-label-input::placeholder { color: #999; font-weight: 700; }
+  .tile-label-input:hover { background-color: #e8e0cb; border-color: #4a3a1a; }
   .tile-label-input:focus {
     border-color: #4a9eff;
-    background: #1a1a1a;
+    background-color: #f4eeda;
     outline: none;
-	background-image: none; /* hide pencil while typing */
+    background-image: none;
+  }
+  .tile-label-input:not(:placeholder-shown) {
+    background-image: none;
   }
   .play-btn {
-    background: #4a9eff;
-    border: none;
+    background: linear-gradient(180deg, #5599df 0%, #2870be 100%);
+    border: 1px solid #1d5396;
     color: white;
     padding: 6px 8px;
-    border-radius: 4px;
-    font-size: 14px;
+    border-radius: 3px;
+    font-size: 13px;
+    font-weight: 700;
     cursor: pointer;
     width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    z-index: 1;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.25),
+      inset 0 -1px 0 rgba(0,0,0,0.25),
+      0 1px 2px rgba(0,0,0,0.4);
   }
-  .play-btn:hover { background: #5aaeff; }
-  .play-btn.playing { background: #ff6b6b; }
-  .play-btn:disabled { background: #555; cursor: not-allowed; }
+  .play-btn:hover { background: linear-gradient(180deg, #66a8ec 0%, #3782cf 100%); }
+  .play-btn.playing {
+    background: linear-gradient(180deg, #d57070 0%, #a83838 100%);
+    border-color: #6a1c1c;
+  }
+  .play-btn:disabled {
+    background: linear-gradient(180deg, #555 0%, #333 100%);
+    border-color: #1a1a1a;
+    cursor: not-allowed;
+  }
   .select-btn {
-    background: transparent;
-    border: 1px solid #555;
-    color: #ccc;
+    background: linear-gradient(180deg, #4a4a4a 0%, #2a2a2a 100%);
+    border: 1px solid #1a1a1a;
+    color: #ddd;
     padding: 4px 8px;
-    border-radius: 4px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
     cursor: pointer;
-    font-size: 12px;
     width: 100%;
+    position: relative;
+    z-index: 1;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.1),
+      inset 0 -1px 0 rgba(0,0,0,0.3),
+      0 1px 2px rgba(0,0,0,0.4);
   }
   .tile.selected .select-btn {
-    background: #4a9eff;
-    border-color: #4a9eff;
+    background: linear-gradient(180deg, #5599df 0%, #2870be 100%);
+    border-color: #1d5396;
     color: white;
   }
   .controls {
@@ -630,6 +693,7 @@ function render() {
         placeholder="Track ${idx + 1}"
         data-note="${track.id}"
         value="${escapeHtml(notes.get(track.id) || '')}">
+      <div class="reels"><span class="reel"></span><span class="reel"></span></div>
       <button class="play-btn" data-id="${track.id}">▶</button>
       <button class="select-btn" data-select="${track.id}">
         ${selected.has(track.id) ? 'Selected' : 'Select'}
@@ -766,13 +830,11 @@ function togglePlay(id) {
 function updatePlayButtons() {
   document.querySelectorAll('.play-btn').forEach(btn => {
     const id = parseInt(btn.dataset.id);
-    if (id === currentlyPlaying) {
-      btn.classList.add('playing');
-      btn.textContent = '⏸';
-    } else {
-      btn.classList.remove('playing');
-      btn.textContent = '▶';
-    }
+    const tile = btn.closest('.tile');
+    const isPlaying = id === currentlyPlaying;
+    btn.classList.toggle('playing', isPlaying);
+    btn.textContent = isPlaying ? '⏸' : '▶';
+    if (tile) tile.classList.toggle('playing', isPlaying);
   });
 }
 

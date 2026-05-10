@@ -1,0 +1,13 @@
+- generic [active] [ref=e1]:
+  - heading "Audio Connections 1" [level=1] [ref=e2]
+  - generic [ref=e3]: by Corey Farwell
+  - generic [ref=e4]:
+    - button "Day 1" [ref=e5] [cursor=pointer]
+    - button "Day 2 🔒" [disabled] [ref=e6]
+  - generic [ref=e7]: Day 2 unlocks in 05:35:47
+  - generic [ref=e8]: Find four groups of four. Tap to play, "Select" to group.
+  - generic [ref=e9]: Loading previews… (1/16)
+  - generic [ref=e10]: "Mistakes remaining:"
+  - generic [ref=e11]:
+    - button "Deselect" [ref=e12] [cursor=pointer]
+    - button "Submit (0/4)" [disabled] [ref=e13]
