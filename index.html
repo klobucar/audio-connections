@@ -335,7 +335,7 @@
 </head>
 <body>
   <h1 id="h1">Audio Connections 2</h1>
-  <div class="byline">by Corey Farwell</div>
+  <div class="byline">by Corey Farwell · <span id="puzzle-date"></span></div>
   <div class="day-selector" id="day-selector"></div>
   <div class="unlock-countdown" id="unlock-countdown"></div>
   <div class="subtitle">Find four groups of four. Tap to play, "Select" to group.</div>
@@ -356,6 +356,7 @@
 const puzzles = [
   {
     day: 1,
+    date: '2026-05-10',
     themes: [
       {
         theme: "Heaven in the title",
@@ -397,6 +398,7 @@ const puzzles = [
   },
   {
     day: 2,
+    date: '2026-05-11',
     releaseAt: '2026-05-11T00:00:00Z',
     themes: [
       {
@@ -605,10 +607,17 @@ function switchPuzzle(idx) {
   init();
 }
 
+function formatPuzzleDate(isoDate) {
+  if (!isoDate) return '';
+  const d = new Date(isoDate + 'T12:00:00Z');
+  return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+}
+
 function updateHeader() {
-  const day = puzzles[currentPuzzleIndex].day;
-  document.getElementById('h1').textContent = `Audio Connections ${day}`;
-  document.title = `Audio Connections ${day} — by Corey Farwell`;
+  const p = puzzles[currentPuzzleIndex];
+  document.getElementById('h1').textContent = `Audio Connections ${p.day}`;
+  document.title = `Audio Connections ${p.day} — by Corey Farwell`;
+  document.getElementById('puzzle-date').textContent = formatPuzzleDate(p.date);
   document.querySelectorAll('.day-btn').forEach(b => {
     b.classList.toggle('active', parseInt(b.dataset.idx) === currentPuzzleIndex);
   });
@@ -756,7 +765,7 @@ function renderMistakes() {
 
 function buildShareText() {
   const day = puzzles[currentPuzzleIndex].day;
-  const lines = [`Audio Connections ${day}`, ''];
+  const lines = [`Audio Connections ${day}`];
   for (const guess of guessHistory) {
     lines.push(guess.themes.map(t => THEME_EMOJI[t]).join(''));
   }
