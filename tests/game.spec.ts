@@ -82,6 +82,24 @@ test.describe('Audio Connections — Day 1 gameplay', () => {
     await expect(page.locator('.tile')).toHaveCount(12, { timeout: 4000 });
   });
 
+  test('correct guess pulses tiles in theme color before the banner appears', async ({ page }) => {
+    const themes = groupByTheme(await readTrackIds(page));
+    const correctIds = themes.get(0)!;
+    await selectIds(page, correctIds);
+    await page.getByTestId('submit-btn').click();
+
+    // During the pulse window, the four tiles carry `matched` and
+    // `matched-theme-0` classes and the banner is not yet visible.
+    const pulsedTiles = page.locator('.tile.matched-theme-0');
+    await expect(pulsedTiles).toHaveCount(4);
+    for (const id of correctIds) {
+      await expect(page.locator(`[data-testid="tile-${id}"]`)).toHaveClass(/matched/);
+    }
+    // After the pulse, the banner appears and the matched class is gone.
+    await expect(page.getByTestId('solved-row-0')).toBeVisible();
+    await expect(page.locator('.tile.matched')).toHaveCount(0);
+  });
+
   test('an incorrect group costs a mistake and shows status', async ({ page }) => {
     const themes = groupByTheme(await readTrackIds(page));
     const mixed = [themes.get(0)![0]!, themes.get(1)![0]!, themes.get(2)![0]!, themes.get(3)![0]!];

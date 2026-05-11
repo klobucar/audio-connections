@@ -8,6 +8,7 @@ interface TileProps {
   selected: boolean;
   playing: boolean;
   exiting: boolean;
+  matched: boolean;
   note: string;
   progress: number;
   disabled: boolean;
@@ -22,6 +23,7 @@ export function Tile({
   selected,
   playing,
   exiting,
+  matched,
   note,
   progress,
   disabled,
@@ -42,6 +44,8 @@ export function Tile({
     selected && 'selected',
     playing && 'playing',
     exiting && 'exiting',
+    matched && 'matched',
+    matched && `matched-theme-${track.themeIdx}`,
   ]
     .filter(Boolean)
     .join(' ');

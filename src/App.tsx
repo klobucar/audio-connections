@@ -14,6 +14,7 @@ import { ResetButton } from './components/ResetButton';
 
 const STATUS_TIMEOUT_MS = 2500;
 const EXIT_ANIM_MS = 400;
+const MATCH_PULSE_MS = 500;
 
 /** Silent 1-frame WAV used as a placeholder when running with ?mock=1. */
 const SILENT_WAV = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
@@ -57,6 +58,7 @@ export function App() {
   const [selected, setSelected] = useState<Set<number>>(() => new Set());
   const [solvedThemes, setSolvedThemes] = useState<Set<number>>(() => new Set());
   const [exitingThemes, setExitingThemes] = useState<Set<number>>(() => new Set());
+  const [matchedThemes, setMatchedThemes] = useState<Set<number>>(() => new Set());
   const [notes, setNotes] = useState<Map<number, string>>(() => new Map());
   const [mistakes, setMistakes] = useState(0);
   const [guessHistory, setGuessHistory] = useState<Guess[]>([]);
@@ -105,6 +107,7 @@ export function App() {
     setSelected(new Set());
     setSolvedThemes(new Set());
     setExitingThemes(new Set());
+    setMatchedThemes(new Set());
     setNotes(new Map());
     setMistakes(0);
     setGuessHistory([]);
@@ -285,18 +288,22 @@ export function App() {
 
     if (correct) {
       const themeIdx = themesPicked[0]!;
-      setExitingThemes(new Set([themeIdx]));
-      setSelected(new Set());
       const newSolved = new Set(solvedThemes);
       newSolved.add(themeIdx);
-      setSolvedThemes(newSolved);
-      if (newSolved.size === themes.length) {
-        setGameOver(true);
-        setStatus('All four solved.');
-      } else {
-        setStatus(`Solved: ${themes[themeIdx]!.theme}`);
-      }
-      setTimeout(() => setExitingThemes(new Set()), EXIT_ANIM_MS);
+      const willWin = newSolved.size === themes.length;
+      // Stage 1: pulse the four tiles in the theme color.
+      setMatchedThemes(new Set([themeIdx]));
+      setSelected(new Set());
+      setStatus(willWin ? 'All four solved.' : `Solved: ${themes[themeIdx]!.theme}`);
+      // Stage 2: end pulse, slide in the banner, start tile fade-out.
+      setTimeout(() => {
+        setMatchedThemes(new Set());
+        setSolvedThemes(newSolved);
+        setExitingThemes(new Set([themeIdx]));
+        if (willWin) setGameOver(true);
+        // Stage 3: fade complete, remove tiles from grid.
+        setTimeout(() => setExitingThemes(new Set()), EXIT_ANIM_MS);
+      }, MATCH_PULSE_MS);
     } else {
       const nextMistakes = mistakes + 1;
       setMistakes(nextMistakes);
@@ -340,6 +347,7 @@ export function App() {
     setSelected(new Set());
     setSolvedThemes(new Set());
     setExitingThemes(new Set());
+    setMatchedThemes(new Set());
     setNotes(new Map());
     setMistakes(0);
     setGuessHistory([]);
@@ -393,7 +401,7 @@ export function App() {
   const dateText = useMemo(() => formatPuzzleDate(puzzle.date), [puzzle.date]);
   const selectedCount = selected.size;
   const isLoading = tracks.length === 0;
-  const tilesDisabled = gameOver || isLoading;
+  const tilesDisabled = gameOver || isLoading || matchedThemes.size > 0;
 
   return (
     <div className="app-container">
@@ -413,6 +421,7 @@ export function App() {
         selected={selected}
         solvedThemes={solvedThemes}
         exitingThemes={exitingThemes}
+        matchedThemes={matchedThemes}
         playingId={playingId}
         playProgress={playProgress}
         notes={notes}

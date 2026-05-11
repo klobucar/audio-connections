@@ -7,6 +7,7 @@ interface GridProps {
   selected: Set<number>;
   solvedThemes: Set<number>;
   exitingThemes: Set<number>;
+  matchedThemes: Set<number>;
   playingId: number | null;
   playProgress: number;
   notes: Map<number, string>;
@@ -21,6 +22,7 @@ export function Grid({
   selected,
   solvedThemes,
   exitingThemes,
+  matchedThemes,
   playingId,
   playProgress,
   notes,
@@ -29,10 +31,13 @@ export function Grid({
   onSelect,
   onNoteChange,
 }: GridProps) {
-  // Keep exiting tiles in the DOM during their fade so they animate out
-  // before being removed; matches the legacy 400ms delay behavior.
+  // Keep tiles in the DOM during pulse + fade animations so they can play
+  // out before being removed by the solvedThemes filter.
   const visible = tracks.filter(
-    (t) => !solvedThemes.has(t.themeIdx) || exitingThemes.has(t.themeIdx),
+    (t) =>
+      !solvedThemes.has(t.themeIdx) ||
+      exitingThemes.has(t.themeIdx) ||
+      matchedThemes.has(t.themeIdx),
   );
 
   const gridRef = useRef<HTMLDivElement>(null);
@@ -65,6 +70,7 @@ export function Grid({
           selected={selected.has(track.id)}
           playing={playingId === track.id}
           exiting={exitingThemes.has(track.themeIdx)}
+          matched={matchedThemes.has(track.themeIdx)}
           note={notes.get(track.id) ?? ''}
           progress={playingId === track.id ? playProgress : 0}
           disabled={disabled}
