@@ -133,8 +133,10 @@ h1 {
   max-width: 720px;
   margin: 0 auto 20px;
   overflow-x: auto;
-  /* Pad the bottom so the scrollbar (when shown) doesn't crowd the tiles. */
-  padding-bottom: 6px;
+  /* Inset padding so the selected tile's scale + accent glow don't get
+     clipped at the leftmost/rightmost visible position when the grid is
+     horizontally scrollable. */
+  padding: 4px 6px 8px;
   scrollbar-width: thin;
   -webkit-overflow-scrolling: touch;
 }

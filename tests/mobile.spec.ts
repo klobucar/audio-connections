@@ -90,6 +90,30 @@ test.describe('Mobile (Pixel 5) layout', () => {
     expect(scrollWidth).toBeGreaterThan(clientWidth);
   });
 
+  test('selected tile at scroll edge keeps its accent border visible', async ({ page }) => {
+    // Scroll the grid all the way left so the first visible tile sits flush
+    // against the grid's left clip edge, then select it. With the grid's
+    // inset padding, the selected border should still render inside the
+    // grid's visible area (no left-edge clipping).
+    const result = await page.evaluate(() => {
+      const grid = document.querySelector<HTMLElement>('.grid')!;
+      grid.scrollLeft = 0;
+      const first = grid.querySelector<HTMLElement>('.tile')!;
+      first.classList.add('selected');
+      const gridBox = grid.getBoundingClientRect();
+      const tileBox = first.getBoundingClientRect();
+      return {
+        gridLeft: gridBox.left,
+        tileLeft: tileBox.left,
+        marginToLeftEdge: tileBox.left - gridBox.left,
+      };
+    });
+    // Selected tile scales by ~2%, so it grows ~1.3px on each side at 130px
+    // wide. We just need any positive buffer, since 0 would mean it's flush
+    // and would clip; require >= 2px for safety.
+    expect(result.marginToLeftEdge).toBeGreaterThanOrEqual(2);
+  });
+
   test('grid is horizontally centered on initial load', async ({ page }) => {
     const { scrollLeft, scrollWidth, clientWidth } = await page.evaluate(() => {
       const g = document.querySelector<HTMLElement>('.grid')!;
