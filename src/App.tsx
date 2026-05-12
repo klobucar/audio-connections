@@ -315,6 +315,9 @@ export function App() {
       newSolved.add(themeIdx);
       const willWin = newSolved.size === themes.length;
       // Stage 1: pulse the four tiles in the theme color.
+      // Pause any currently-playing preview so the match feedback isn't
+      // talked over and we don't keep a tile playing once it's removed.
+      stopAudio();
       setMatchedThemes(new Set([themeIdx]));
       setSelected(new Set());
       setStatus(willWin ? 'All four solved.' : `Solved: ${themes[themeIdx]!.theme}`);
@@ -349,7 +352,7 @@ export function App() {
         setStatus('Not a group. Try again.');
       }
     }
-  }, [gameOver, selected, tracks, themes, solvedThemes, mistakes, setStatus]);
+  }, [gameOver, selected, tracks, themes, solvedThemes, mistakes, setStatus, stopAudio]);
 
   /* ── Switch day ── (load effect resets in-memory state when puzzle.day changes) */
   const switchDay = useCallback(

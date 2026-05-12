@@ -82,6 +82,22 @@ test.describe('Audio Connections — Day 1 gameplay', () => {
     await expect(page.locator('.tile')).toHaveCount(12, { timeout: 4000 });
   });
 
+  test('correct guess pauses the currently-playing preview', async ({ page }) => {
+    const themes = groupByTheme(await readTrackIds(page));
+    const correctIds = themes.get(0)!;
+    // Start playing one of the about-to-be-correct tiles.
+    const playingId = correctIds[0]!;
+    await page.getByTestId(`play-${playingId}`).click();
+    await expect(page.locator(`[data-testid="tile-${playingId}"]`)).toHaveClass(/playing/);
+
+    await selectIds(page, correctIds);
+    await page.getByTestId('submit-btn').click();
+
+    // After submit, no tile should still be in the playing state.
+    await expect(page.locator('.tile.playing')).toHaveCount(0);
+    await expect(page.locator('.play-btn.playing')).toHaveCount(0);
+  });
+
   test('correct guess pulses tiles in theme color before the banner appears', async ({ page }) => {
     const themes = groupByTheme(await readTrackIds(page));
     const correctIds = themes.get(0)!;
