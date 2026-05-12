@@ -6,6 +6,9 @@ const CURRENT_DAY_KEY = 'audio-connections:currentDay';
 
 export interface PersistedGameState {
   __v: number;
+  /** Puzzle day this state belongs to. Defensive check against
+      cross-day contamination if save fires with a mismatched key. */
+  day: number;
   selected: number[];
   solvedThemes: number[];
   notes: Array<[number, string]>;
@@ -29,16 +32,20 @@ export function loadState(day: number): PersistedGameState | null {
     if (!raw) return null;
     const parsed = JSON.parse(raw) as PersistedGameState;
     if (parsed.__v !== VERSION) return null;
+    // Reject stale entries whose day field doesn't match the slot. This
+    // catches cross-day writes (e.g. older builds saved Day N-1's state
+    // into Day N's slot).
+    if (parsed.day !== day) return null;
     return parsed;
   } catch {
     return null;
   }
 }
 
-export function saveState(day: number, state: Omit<PersistedGameState, '__v'>): void {
+export function saveState(day: number, state: Omit<PersistedGameState, '__v' | 'day'>): void {
   if (typeof localStorage === 'undefined') return;
   try {
-    localStorage.setItem(key(day), JSON.stringify({ __v: VERSION, ...state }));
+    localStorage.setItem(key(day), JSON.stringify({ __v: VERSION, day, ...state }));
   } catch {
     /* quota or disabled storage — ignore */
   }

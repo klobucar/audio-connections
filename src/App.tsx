@@ -54,6 +54,10 @@ export function App() {
     return latestReleasedIndex();
   });
   const [tracks, setTracks] = useState<LoadedTrack[]>([]);
+  /** Day that `tracks` and the rest of the gameplay state belong to. Used to
+      gate the save-to-localStorage effect so we never write the outgoing day's
+      state into the incoming day's slot during a day switch. */
+  const [tracksDay, setTracksDay] = useState<number | null>(null);
   const [loadStatus, setLoadStatus] = useState('Loading previews from iTunes…');
   const [selected, setSelected] = useState<Set<number>>(() => new Set());
   const [solvedThemes, setSolvedThemes] = useState<Set<number>>(() => new Set());
@@ -104,6 +108,7 @@ export function App() {
 
     // Reset state for the incoming puzzle. Persisted state (if any) is reapplied below.
     setTracks([]);
+    setTracksDay(null);
     setSelected(new Set());
     setSolvedThemes(new Set());
     setExitingThemes(new Set());
@@ -169,6 +174,7 @@ export function App() {
       } else {
         setTracks(shuffle(loaded));
       }
+      setTracksDay(puzzle.day);
     })();
 
     return () => {
@@ -179,6 +185,11 @@ export function App() {
   /* ── Persist game state on every change (after tracks have loaded) ── */
   useEffect(() => {
     if (tracks.length === 0) return;
+    // Skip while a day switch is in flight: tracksDay marks the day the
+    // current tracks + gameplay state belong to. Without this guard the
+    // outgoing day's state would briefly satisfy this effect under the
+    // incoming day's key.
+    if (tracksDay !== puzzle.day) return;
     saveState(puzzle.day, {
       selected: [...selected],
       solvedThemes: [...solvedThemes],
@@ -189,7 +200,7 @@ export function App() {
       trackOrder: tracks.map((t) => t.id),
       guessSignatures: [...guessSigRef.current],
     });
-  }, [puzzle.day, tracks, selected, solvedThemes, notes, mistakes, guessHistory, gameOver]);
+  }, [puzzle.day, tracksDay, tracks, selected, solvedThemes, notes, mistakes, guessHistory, gameOver]);
 
   const togglePlay = useCallback(
     (id: number) => {

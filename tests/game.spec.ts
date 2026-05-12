@@ -175,6 +175,35 @@ test.describe('Audio Connections — day switching', () => {
     await expect(page.getByTestId('puzzle-heading')).toHaveText('Audio Connections 2');
     await expect(page.locator('.tile')).toHaveCount(16);
   });
+
+  test('losing one day does not leak fail state into the next day', async ({ page }) => {
+    // Reproduces the "switched to Day 2 and it was in the fail state" bug:
+    // the save effect used to fire on puzzle.day change with the outgoing
+    // day's gameplay state, writing it under the incoming day's key, and the
+    // load effect's setEqual check (positions 0..15) happily accepted it.
+    await gotoDay(page, 1);
+    const themes = groupByTheme(await readTrackIds(page));
+    const wrongSets = [
+      [themes.get(0)![0]!, themes.get(1)![0]!, themes.get(2)![0]!, themes.get(3)![0]!],
+      [themes.get(0)![1]!, themes.get(1)![1]!, themes.get(2)![1]!, themes.get(3)![1]!],
+      [themes.get(0)![2]!, themes.get(1)![2]!, themes.get(2)![2]!, themes.get(3)![2]!],
+      [themes.get(0)![3]!, themes.get(1)![3]!, themes.get(2)![3]!, themes.get(3)![3]!],
+    ];
+    for (let i = 0; i < wrongSets.length; i++) {
+      if (i > 0) await page.getByTestId('deselect-btn').click();
+      await selectIds(page, wrongSets[i]!);
+      await page.getByTestId('submit-btn').click();
+    }
+    await expect(page.getByTestId('end-panel')).toBeVisible();
+    await expect(page.getByTestId('end-panel')).toContainText('Game over');
+
+    await page.getByTestId('day-btn-2').click();
+    await expect(page.getByTestId('puzzle-heading')).toHaveText('Audio Connections 2');
+    await expect(page.locator('.tile')).toHaveCount(16);
+    await expect(page.getByTestId('end-panel')).toHaveCount(0);
+    await expect(page.locator('.mistake-dot.used')).toHaveCount(0);
+    await expect(page.getByTestId('submit-btn')).toHaveText('Submit (0/4)');
+  });
 });
 
 test.describe('Audio Connections — Konami unlock', () => {
