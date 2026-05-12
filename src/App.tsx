@@ -380,12 +380,6 @@ export function App() {
     setGameOver(false);
     guessSigRef.current = new Set();
     setTracks((prev) => shuffle(prev));
-    setCompletedDays((prev) => {
-      if (!prev.has(puzzle.day)) return prev;
-      const next = new Set(prev);
-      next.delete(puzzle.day);
-      return next;
-    });
     setStatus('Puzzle reset.');
   }, [puzzle.day, stopAudio, setStatus]);
 
@@ -429,22 +423,32 @@ export function App() {
     saveCurrentDay(puzzle.day);
   }, [puzzle.day]);
 
-  /* ── Mark the day completed once it's won ── */
+  /* ── Recompute completedDays from authoritative state on every change.
+        For the current day, the live in-memory state is authoritative; for
+        other days, localStorage is. This way a stale in-memory set can never
+        drift from the persisted truth, and a Reset on one day correctly drops
+        its check without us having to remember to setCompletedDays in
+        resetPuzzle. */
   useEffect(() => {
-    // Same guard as the persistence save effect: when puzzle.day flips on a
-    // day switch, the other gameplay state is still from the outgoing day
-    // until the track-load effect resets it. Without this check, switching
-    // out of a just-won day marks the *new* day done.
     if (tracksDay !== puzzle.day) return;
-    if (gameOver && won) {
-      setCompletedDays((prev) => {
-        if (prev.has(puzzle.day)) return prev;
-        const next = new Set(prev);
-        next.add(puzzle.day);
-        return next;
-      });
+    const next = new Set<number>();
+    for (const p of puzzles) {
+      let isDone: boolean;
+      if (p.day === puzzle.day) {
+        isDone = gameOver && won;
+      } else {
+        const s = loadState(p.day);
+        isDone = !!(
+          s && s.gameOver && s.solvedThemes.length === p.themes.length && s.mistakes < MAX_MISTAKES
+        );
+      }
+      if (isDone) next.add(p.day);
     }
-  }, [gameOver, won, puzzle.day, tracksDay]);
+    setCompletedDays((prev) => {
+      if (prev.size === next.size && [...prev].every((d) => next.has(d))) return prev;
+      return next;
+    });
+  }, [tracksDay, puzzle.day, gameOver, won]);
 
   const heading = `Audio Connections ${puzzle.day}`;
   const dateText = useMemo(() => formatPuzzleDate(puzzle.date), [puzzle.date]);
