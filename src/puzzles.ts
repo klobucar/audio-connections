@@ -115,7 +115,7 @@ export const puzzles: Puzzle[] = [
           { id: 828259377, artist: 'M83', title: 'Midnight City' },
           { id: 696886431, artist: 'Daft Punk', title: 'Around the World' },
           { id: 1771710539, artist: 'Phoenix', title: '1901' },
-          { id: 1452878212, artist: 'Debussy', title: 'Clair de Lune' },
+          { id: 1452878212, artist: 'Debussy', title: 'Clair de Lune', note: 'performed by Jean-Yves Thibaudet' },
         ],
       },
       {
