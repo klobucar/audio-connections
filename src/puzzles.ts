@@ -4,7 +4,7 @@ export const puzzles: Puzzle[] = [
   {
     day: 1,
     date: '2026-05-10',
-    author: 'robchahin',
+    author: 'Corey Farwell',
     themes: [
       {
         theme: 'Heaven in the title',
@@ -47,7 +47,7 @@ export const puzzles: Puzzle[] = [
   {
     day: 2,
     date: '2026-05-11',
-    author: 'robchahin',
+    author: 'Corey Farwell',
     releaseAt: '2026-05-11T00:00:00Z',
     themes: [
       {
@@ -91,7 +91,7 @@ export const puzzles: Puzzle[] = [
   {
     day: 3,
     date: '2026-05-12',
-    author: 'robchahin',
+    author: 'Corey Farwell',
     releaseAt: '2026-05-12T00:00:00Z',
     themes: [
       {
@@ -135,7 +135,7 @@ export const puzzles: Puzzle[] = [
   {
     day: 4,
     date: '2026-05-13',
-    author: 'robchahin',
+    author: 'Corey Farwell',
     releaseAt: '2026-05-13T00:00:00Z',
     themes: [
       {
@@ -179,7 +179,7 @@ export const puzzles: Puzzle[] = [
   {
     day: 5,
     date: '2026-05-14',
-    author: 'robchahin',
+    author: 'Corey Farwell',
     releaseAt: '2026-05-14T00:00:00Z',
     themes: [
       {
@@ -223,7 +223,7 @@ export const puzzles: Puzzle[] = [
   {
     day: 6,
     date: '2026-05-15',
-    author: 'robchahin',
+    author: 'Corey Farwell',
     releaseAt: '2026-05-15T00:00:00Z',
     themes: [
       {
@@ -267,7 +267,7 @@ export const puzzles: Puzzle[] = [
   {
     day: 7,
     date: '2026-05-16',
-    author: 'robchahin',
+    author: 'Corey Farwell',
     releaseAt: '2026-05-16T00:00:00Z',
     themes: [
       {
@@ -311,7 +311,7 @@ export const puzzles: Puzzle[] = [
   {
     day: 8,
     date: '2026-05-17',
-    author: 'robchahin',
+    author: 'Jonathon Klobucar',
     releaseAt: '2026-05-17T00:00:00Z',
     themes: [
       {
@@ -355,7 +355,7 @@ export const puzzles: Puzzle[] = [
   {
     day: 9,
     date: '2026-05-18',
-    author: 'robchahin',
+    author: 'Jonathon Klobucar',
     releaseAt: '2026-05-18T00:00:00Z',
     themes: [
       {
@@ -399,7 +399,7 @@ export const puzzles: Puzzle[] = [
   {
     day: 10,
     date: '2026-05-19',
-    author: 'robchahin',
+    author: 'Rob Chahin',
     releaseAt: '2026-05-19T00:00:00Z',
     themes: [
       {
