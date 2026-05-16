@@ -1,5 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import { puzzles } from '../src/puzzles';
+import { puzzles } from './helpers/puzzles';
 
 const APP_URL = '/?mock=1';
 
