@@ -2,12 +2,6 @@ interface ITunesLookupResult {
   results: Array<{ previewUrl?: string }>;
 }
 
-declare global {
-  interface Window {
-    [key: string]: unknown;
-  }
-}
-
 function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
 }
@@ -16,13 +10,17 @@ function jsonpLookup(itunesId: number, timeoutMs = 10_000): Promise<ITunesLookup
   return new Promise((resolve, reject) => {
     const callbackName = `__itunes_cb_${itunesId}_${Math.random().toString(36).slice(2)}`;
     const script = document.createElement('script');
+    // Narrow the JSONP callback slot locally instead of widening Window
+    // globally. The only thing we put on `window` is this one callback
+    // per request; everything else stays strictly typed.
+    const callbackHost = window as unknown as Record<string, unknown>;
     let timer: ReturnType<typeof setTimeout> | undefined;
     const cleanup = () => {
-      delete window[callbackName];
+      delete callbackHost[callbackName];
       script.remove();
       if (timer) clearTimeout(timer);
     };
-    window[callbackName] = (data: ITunesLookupResult) => {
+    callbackHost[callbackName] = (data: ITunesLookupResult) => {
       cleanup();
       resolve(data.results[0] ?? null);
     };
