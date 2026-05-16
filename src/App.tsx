@@ -115,6 +115,10 @@ export function App() {
     }, STATUS_TIMEOUT_MS);
   }, []);
 
+  useEffect(() => () => {
+    if (statusTimerRef.current) clearTimeout(statusTimerRef.current);
+  }, []);
+
   /* ── Audio playback ── */
   const stopAudio = useCallback(() => {
     if (audioRef.current) {

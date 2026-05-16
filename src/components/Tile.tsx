@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react';
 import type { LoadedTrack } from '../types';
 import { CassetteDeck } from './CassetteDeck';
 
@@ -31,14 +30,6 @@ export function Tile({
   onSelect,
   onNoteChange,
 }: TileProps) {
-  const fillRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (fillRef.current) {
-      fillRef.current.style.width = `${Math.min(100, progress * 100)}%`;
-    }
-  }, [progress]);
-
   const tileClass = [
     'tile',
     selected && 'selected',
@@ -49,6 +40,8 @@ export function Tile({
   ]
     .filter(Boolean)
     .join(' ');
+
+  const progressPct = Math.min(100, progress * 100);
 
   return (
     <div className={tileClass} data-track-id={track.id} data-testid={`tile-${track.id}`}>
@@ -89,7 +82,7 @@ export function Tile({
         </button>
       </div>
       <div className="tile-progress">
-        <div className="tile-progress-fill" ref={fillRef} />
+        <div className="tile-progress-fill" style={{ width: `${progressPct}%` }} />
       </div>
     </div>
   );

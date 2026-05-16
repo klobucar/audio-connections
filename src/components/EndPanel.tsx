@@ -8,6 +8,8 @@ interface EndPanelProps {
   guessHistory: Guess[];
 }
 
+type CopyState = 'idle' | 'copied' | 'failed';
+
 function buildShareText(day: number, guessHistory: Guess[]): string {
   const lines = [`Audio Connections ${day}`];
   for (const g of guessHistory) {
@@ -16,22 +18,23 @@ function buildShareText(day: number, guessHistory: Guess[]): string {
   return lines.join('\n');
 }
 
+const COPY_LABEL: Record<CopyState, string> = {
+  idle: 'Copy result',
+  copied: 'Copied!',
+  failed: 'Copy failed — select text manually',
+};
+
 export function EndPanel({ won, day, guessHistory }: EndPanelProps) {
-  const [copied, setCopied] = useState(false);
-  const [copyText, setCopyText] = useState('Copy result');
+  const [copyState, setCopyState] = useState<CopyState>('idle');
   const shareText = buildShareText(day, guessHistory);
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(shareText);
-      setCopied(true);
-      setCopyText('Copied!');
-      setTimeout(() => {
-        setCopied(false);
-        setCopyText('Copy result');
-      }, 1500);
+      setCopyState('copied');
+      setTimeout(() => setCopyState('idle'), 1500);
     } catch {
-      setCopyText('Copy failed — select text manually');
+      setCopyState('failed');
     }
   };
 
@@ -41,11 +44,11 @@ export function EndPanel({ won, day, guessHistory }: EndPanelProps) {
       <div className="share-text" data-testid="share-text">{shareText}</div>
       <button
         type="button"
-        className={`copy-btn${copied ? ' copied' : ''}`}
+        className={`copy-btn${copyState === 'copied' ? ' copied' : ''}`}
         onClick={handleCopy}
         data-testid="copy-btn"
       >
-        {copyText}
+        {COPY_LABEL[copyState]}
       </button>
     </div>
   );
