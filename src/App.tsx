@@ -4,6 +4,7 @@ import { puzzles, MAX_MISTAKES, isReleased, latestReleasedIndex } from './puzzle
 import { fetchPreviewUrl, sleep } from './itunes';
 import { loadState, saveState, clearState, loadCurrentDay, saveCurrentDay } from './storage';
 import { useAudio } from './hooks/useAudio';
+import { useKonami } from './hooks/useKonami';
 import { DaySelector } from './components/DaySelector';
 import { Countdown } from './components/Countdown';
 import { Grid } from './components/Grid';
@@ -82,6 +83,10 @@ export function App() {
   const [guessHistory, setGuessHistory] = useState<Guess[]>([]);
   const [gameOver, setGameOver] = useState(false);
   const [statusMsg, setStatusMsg] = useState('');
+  /** Days unlocked at runtime — by Konami (all of them) or by the countdown
+   *  ticking past a `releaseAt` (one at a time). Either case adds the day
+   *  to this set; nobody reaches into module-level puzzle data anymore. */
+  const [unlockedDays, setUnlockedDays] = useState<Set<number>>(() => new Set());
   // Days the player has finished (all themes solved, no mistakes left). Seeded
   // from localStorage so the green ✓ survives reloads.
   const [completedDays, setCompletedDays] = useState<Set<number>>(() => {
@@ -322,11 +327,11 @@ export function App() {
     (idx: number) => {
       if (idx === currentIndex) return;
       const p = puzzles[idx];
-      if (!p || !isReleased(p)) return;
+      if (!p || !isReleased(p, { unlocked: unlockedDays })) return;
       stopAudio();
       setCurrentIndex(idx);
     },
-    [currentIndex, stopAudio],
+    [currentIndex, stopAudio, unlockedDays],
   );
 
   /* ── Reset current puzzle (clears persisted state + reshuffles) ── */
@@ -346,39 +351,22 @@ export function App() {
     setStatus('Puzzle reset.');
   }, [puzzle.day, stopAudio, setStatus]);
 
-  /* ── Force re-render (for unlockAll + countdown-driven unlocks) ── */
-  const [, forceRender] = useState(0);
-  const bump = useCallback(() => forceRender((n) => n + 1), []);
-
   /* ── Konami code (↑↑↓↓←→←→BA) unlocks every puzzle ── */
-  useEffect(() => {
-    const SEQUENCE = [
-      'ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown',
-      'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight',
-      'b', 'a',
-    ];
-    let progress = 0;
+  const onKonamiUnlock = useCallback(() => {
+    setUnlockedDays(new Set(puzzles.map((p) => p.day)));
+    setStatus('🎮 Konami! All puzzles unlocked.');
+  }, [setStatus]);
+  useKonami(onKonamiUnlock);
 
-    const onKey = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement | null)?.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-      const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
-      if (key === SEQUENCE[progress]) {
-        progress++;
-        if (progress === SEQUENCE.length) {
-          progress = 0;
-          for (const p of puzzles) delete p.releaseAt;
-          bump();
-          setStatus('🎮 Konami! All puzzles unlocked.');
-        }
-      } else {
-        progress = key === SEQUENCE[0] ? 1 : 0;
-      }
-    };
-
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [bump, setStatus]);
+  /* ── Countdown announces a day became available naturally ── */
+  const onNaturalUnlock = useCallback((day: number) => {
+    setUnlockedDays((prev) => {
+      if (prev.has(day)) return prev;
+      const next = new Set(prev);
+      next.add(day);
+      return next;
+    });
+  }, []);
 
   /* ── Persist current day when puzzle changes ── */
   useEffect(() => {
@@ -428,9 +416,10 @@ export function App() {
         puzzles={puzzles}
         currentIndex={currentIndex}
         completedDays={completedDays}
+        unlockedDays={unlockedDays}
         onSwitch={switchDay}
       />
-      <Countdown puzzles={puzzles} onUnlock={bump} />
+      <Countdown puzzles={puzzles} unlockedDays={unlockedDays} onUnlock={onNaturalUnlock} />
       <div className="subtitle">Find four groups of four. Tap to play, "Select" to group.</div>
       <SolvedList themes={themes} solvedThemes={solvedThemes} tracks={tracks} />
       {gameOver && (

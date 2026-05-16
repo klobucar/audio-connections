@@ -84,14 +84,23 @@ export const puzzles: Puzzle[] = collected;
 export const MAX_MISTAKES = 4;
 export const THEME_EMOJI = ['🟨', '🟩', '🟦', '🟪'] as const;
 
-export function isReleased(p: Puzzle, now: number = Date.now()): boolean {
-  if (!p.releaseAt) return true;
-  return now >= new Date(p.releaseAt).getTime();
+export interface IsReleasedOpts {
+  now?: number;
+  /** Days unlocked outside the normal release schedule — Konami code and
+   *  countdown-driven unlocks both land in this set so callers only need
+   *  one predicate. */
+  unlocked?: ReadonlySet<number>;
 }
 
-export function latestReleasedIndex(now: number = Date.now()): number {
+export function isReleased(p: Puzzle, opts: IsReleasedOpts = {}): boolean {
+  if (opts.unlocked?.has(p.day)) return true;
+  if (!p.releaseAt) return true;
+  return (opts.now ?? Date.now()) >= new Date(p.releaseAt).getTime();
+}
+
+export function latestReleasedIndex(opts: IsReleasedOpts = {}): number {
   for (let i = puzzles.length - 1; i >= 0; i--) {
-    if (isReleased(puzzles[i]!, now)) return i;
+    if (isReleased(puzzles[i]!, opts)) return i;
   }
   return 0;
 }

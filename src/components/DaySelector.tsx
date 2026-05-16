@@ -5,14 +5,15 @@ interface DaySelectorProps {
   puzzles: Puzzle[];
   currentIndex: number;
   completedDays: Set<number>;
+  unlockedDays: ReadonlySet<number>;
   onSwitch: (idx: number) => void;
 }
 
-export function DaySelector({ puzzles, currentIndex, completedDays, onSwitch }: DaySelectorProps) {
+export function DaySelector({ puzzles, currentIndex, completedDays, unlockedDays, onSwitch }: DaySelectorProps) {
   return (
     <div className="day-selector" data-testid="day-selector">
       {puzzles.map((p, idx) => {
-        const released = isReleased(p);
+        const released = isReleased(p, { unlocked: unlockedDays });
         const done = completedDays.has(p.day);
         const classes = [
           'day-btn',

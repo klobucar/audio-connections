@@ -4,7 +4,8 @@ import { isReleased } from '../puzzles';
 
 interface CountdownProps {
   puzzles: Puzzle[];
-  onUnlock: () => void;
+  unlockedDays: ReadonlySet<number>;
+  onUnlock: (day: number) => void;
 }
 
 function format(ms: number): string {
@@ -19,15 +20,15 @@ function format(ms: number): string {
     : `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
 }
 
-export function Countdown({ puzzles, onUnlock }: CountdownProps) {
+export function Countdown({ puzzles, unlockedDays, onUnlock }: CountdownProps) {
   const [text, setText] = useState('');
 
   useEffect(() => {
     let active = true;
-    let unlocked = false;
+    let firedFor: number | null = null;
     function tick() {
       if (!active) return;
-      const next = puzzles.find((p) => !isReleased(p));
+      const next = puzzles.find((p) => !isReleased(p, { unlocked: unlockedDays }));
       if (!next || !next.releaseAt) {
         setText('');
         return;
@@ -35,9 +36,9 @@ export function Countdown({ puzzles, onUnlock }: CountdownProps) {
       const ms = new Date(next.releaseAt).getTime() - Date.now();
       if (ms <= 0) {
         setText('');
-        if (!unlocked) {
-          unlocked = true;
-          onUnlock();
+        if (firedFor !== next.day) {
+          firedFor = next.day;
+          onUnlock(next.day);
         }
         return;
       }
@@ -49,7 +50,7 @@ export function Countdown({ puzzles, onUnlock }: CountdownProps) {
       active = false;
       clearInterval(id);
     };
-  }, [puzzles, onUnlock]);
+  }, [puzzles, unlockedDays, onUnlock]);
 
   return (
     <div className="unlock-countdown" data-testid="countdown">
