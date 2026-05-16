@@ -3,6 +3,12 @@ import { puzzles } from '../src/puzzles';
 
 const APP_URL = '/?mock=1';
 
+test('puzzles expose author metadata for every day', () => {
+  for (const puzzle of puzzles) {
+    expect(puzzle.author.trim().length).toBeGreaterThan(0);
+  }
+});
+
 /** Switch to a specific day so tests are independent of the host clock. */
 async function gotoDay(page: Page, day: number) {
   await page.goto(APP_URL);

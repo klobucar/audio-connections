@@ -13,6 +13,7 @@ export interface Theme {
 export interface Puzzle {
   day: number;
   date: string;
+  author: string;
   releaseAt?: string;
   themes: Theme[];
 }
