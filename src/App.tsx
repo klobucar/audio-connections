@@ -419,9 +419,9 @@ export function App() {
 
   /* ── Update document title + persist current day when puzzle changes ── */
   useEffect(() => {
-    document.title = `Audio Connections ${puzzle.day} — by Corey Farwell`;
+    document.title = `Audio Connections ${puzzle.day} — by ${puzzle.author}`;
     saveCurrentDay(puzzle.day);
-  }, [puzzle.day]);
+  }, [puzzle.day, puzzle.author]);
 
   /* ── Recompute completedDays from authoritative state on every change.
         For the current day, the live in-memory state is authoritative; for
@@ -460,7 +460,7 @@ export function App() {
     <div className="app-container">
       <h1 data-testid="puzzle-heading">{heading}</h1>
       <div className="byline">
-        by Corey Farwell · <span data-testid="puzzle-date">{dateText}</span>
+        by <span data-testid="puzzle-author">{puzzle.author}</span> · <span data-testid="puzzle-date">{dateText}</span>
       </div>
       <DaySelector
         puzzles={puzzles}
