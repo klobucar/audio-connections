@@ -301,6 +301,92 @@ export const puzzles: Puzzle[] = [
       },
     ],
   },
+  {
+    day: 8,
+    date: '2026-05-17',
+    releaseAt: '2026-05-17T00:00:00Z',
+    themes: [
+      {
+        theme: 'Color in the title',
+        tracks: [
+          { id: 1122782283, artist: 'Coldplay', title: 'Yellow' },
+          { id: 1838782096, artist: 'Van Morrison', title: 'Brown Eyed Girl' },
+          { id: 257424857, artist: 'Eiffel 65', title: 'Blue (Da Ba Dee)' },
+          { id: 425465351, artist: 'Pearl Jam', title: 'Black' },
+        ],
+      },
+      {
+        theme: "Girl's name is the title",
+        tracks: [
+          { id: 1062400330, artist: 'Dolly Parton', title: 'Jolene' },
+          { id: 269573364, artist: 'Michael Jackson', title: 'Billie Jean' },
+          { id: 1440663520, artist: 'Derek and the Dominos', title: 'Layla' },
+          { id: 912323296, artist: 'Fleetwood Mac', title: 'Rhiannon' },
+        ],
+      },
+      {
+        theme: 'Bond film title songs',
+        tracks: [
+          { id: 712850997, artist: 'Tina Turner', title: 'GoldenEye', note: 'GoldenEye' },
+          { id: 1536005324, artist: 'Nancy Sinatra', title: 'You Only Live Twice', note: 'You Only Live Twice' },
+          { id: 697012276, artist: 'Duran Duran', title: 'A View to a Kill', note: 'A View to a Kill' },
+          { id: 715595121, artist: 'Carly Simon', title: 'Nobody Does It Better', note: 'The Spy Who Loved Me' },
+        ],
+      },
+      {
+        theme: 'Covers more famous than the original',
+        tracks: [
+          { id: 1452875626, artist: 'Johnny Cash', title: 'Hurt', note: 'orig. Nine Inch Nails' },
+          { id: 1440517679, artist: 'Soft Cell', title: 'Tainted Love', note: 'orig. Gloria Jones' },
+          { id: 937107838, artist: 'Aretha Franklin', title: 'Respect', note: 'orig. Otis Redding' },
+          { id: 1440893075, artist: 'Nirvana', title: 'Where Did You Sleep Last Night', note: 'orig. Lead Belly' },
+        ],
+      },
+    ],
+  },
+  {
+    day: 9,
+    date: '2026-05-18',
+    releaseAt: '2026-05-18T00:00:00Z',
+    themes: [
+      {
+        theme: 'Weather in the title',
+        tracks: [
+          { id: 1441164589, artist: 'The Beatles', title: 'Here Comes the Sun' },
+          { id: 190758932, artist: 'Bob Dylan', title: "Blowin' in the Wind" },
+          { id: 640047752, artist: 'The Doors', title: 'Riders on the Storm' },
+          { id: 186092391, artist: 'The Weather Girls', title: "It's Raining Men" },
+        ],
+      },
+      {
+        theme: 'Super Bowl Halftime headliners',
+        tracks: [
+          { id: 1544173942, artist: 'Prince', title: '1999', note: 'Super Bowl XLI (2007)' },
+          { id: 1161504024, artist: 'Bruno Mars', title: '24K Magic', note: 'Super Bowl XLVIII (2014)' },
+          { id: 1488408568, artist: 'The Weeknd', title: 'Blinding Lights', note: 'Super Bowl LV (2021)' },
+          { id: 1441154437, artist: 'Rihanna', title: 'Umbrella', note: 'Super Bowl LVII (2023)' },
+        ],
+      },
+      {
+        theme: 'Performed on The Simpsons',
+        tracks: [
+          { id: 1443811916, artist: 'Tom Jones', title: "It's Not Unusual", note: 'Marge Gets a Job' },
+          { id: 1127410268, artist: 'Ramones', title: 'Blitzkrieg Bop', note: 'Rosebud' },
+          { id: 721224391, artist: 'The Smashing Pumpkins', title: 'Zero', note: 'Homerpalooza' },
+          { id: 1533513756, artist: 'The White Stripes', title: 'The Hardest Button to Button', note: 'Jazzy and the Pussycats' },
+        ],
+      },
+      {
+        theme: 'Sampled by the Beastie Boys',
+        tracks: [
+          { id: 580708184, artist: 'Led Zeppelin', title: 'When the Levee Breaks', note: "Rhymin & Stealin'" },
+          { id: 785239189, artist: 'Black Sabbath', title: 'Sweet Leaf', note: "Rhymin & Stealin'" },
+          { id: 1048472613, artist: 'Curtis Mayfield', title: 'Superfly', note: 'Egg Man' },
+          { id: 216553256, artist: 'Sly & The Family Stone', title: 'Loose Booty', note: 'Shadrach' },
+        ],
+      },
+    ],
+  },
 ];
 
 export const MAX_MISTAKES = 4;
