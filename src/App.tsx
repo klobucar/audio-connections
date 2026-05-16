@@ -3,6 +3,7 @@ import type { LoadedTrack, Guess } from './types';
 import { puzzles, MAX_MISTAKES, isReleased, latestReleasedIndex } from './puzzles';
 import { fetchPreviewUrl, sleep } from './itunes';
 import { loadState, saveState, clearState, loadCurrentDay, saveCurrentDay } from './storage';
+import { useAudio } from './hooks/useAudio';
 import { DaySelector } from './components/DaySelector';
 import { Countdown } from './components/Countdown';
 import { Grid } from './components/Grid';
@@ -80,8 +81,6 @@ export function App() {
   const [mistakes, setMistakes] = useState(0);
   const [guessHistory, setGuessHistory] = useState<Guess[]>([]);
   const [gameOver, setGameOver] = useState(false);
-  const [playingId, setPlayingId] = useState<number | null>(null);
-  const [playProgress, setPlayProgress] = useState(0);
   const [statusMsg, setStatusMsg] = useState('');
   // Days the player has finished (all themes solved, no mistakes left). Seeded
   // from localStorage so the green ✓ survives reloads.
@@ -96,7 +95,6 @@ export function App() {
     return out;
   });
 
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const statusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const guessSigRef = useRef<Set<string>>(new Set());
   const loadGenRef = useRef(0);
@@ -104,6 +102,8 @@ export function App() {
   const puzzle = puzzles[currentIndex]!;
   const themes = puzzle.themes;
   const won = solvedThemes.size === themes.length && mistakes < MAX_MISTAKES;
+
+  const { playingId, playProgress, togglePlay, stopAudio } = useAudio(tracks);
 
   /* ── Status toast ── */
   const setStatus = useCallback((text: string) => {
@@ -117,16 +117,6 @@ export function App() {
 
   useEffect(() => () => {
     if (statusTimerRef.current) clearTimeout(statusTimerRef.current);
-  }, []);
-
-  /* ── Audio playback ── */
-  const stopAudio = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
-    }
-    setPlayingId(null);
-    setPlayProgress(0);
   }, []);
 
   /* ── Load tracks (iTunes lookups) + restore persisted state for this day ── */
@@ -230,50 +220,6 @@ export function App() {
       guessSignatures: [...guessSigRef.current],
     });
   }, [puzzle.day, tracksDay, tracks, selected, solvedThemes, notes, mistakes, guessHistory, gameOver]);
-
-  const togglePlay = useCallback(
-    (id: number) => {
-      const track = tracks.find((t) => t.id === id);
-      if (!track) return;
-
-      const audio = audioRef.current;
-      const isThisPlaying =
-        audio !== null && playingId === id && !audio.paused && !audio.ended;
-
-      stopAudio();
-      if (isThisPlaying) return;
-
-      const next = new Audio(track.previewUrl);
-      audioRef.current = next;
-      setPlayingId(id);
-      setPlayProgress(0);
-
-      next.addEventListener('ended', () => {
-        if (audioRef.current === next) {
-          stopAudio();
-        }
-      });
-      next.addEventListener('timeupdate', () => {
-        if (audioRef.current !== next) return;
-        const dur = next.duration || 30;
-        setPlayProgress(next.currentTime / dur);
-      });
-      next.play().catch((err) => {
-        console.warn('Audio play failed:', err);
-        if (audioRef.current === next) {
-          stopAudio();
-        }
-      });
-    },
-    [tracks, playingId, stopAudio],
-  );
-
-  useEffect(() => {
-    return () => {
-      if (audioRef.current) audioRef.current.pause();
-      audioRef.current = null;
-    };
-  }, []);
 
   /* ── Selection ── */
   const toggleSelect = useCallback(
