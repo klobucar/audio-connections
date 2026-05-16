@@ -26,6 +26,13 @@
      transition + keyframe of the same length. */
   --exit-anim-ms: 350ms;
   --match-pulse-ms: 500ms;
+  /* Theme colors used both by the solved-row banner background and by the
+     matched-theme tile pulse. Keep these in sync — they're the player's
+     visual identity for each group. */
+  --theme-0: #f9df6d;
+  --theme-1: #a0c35a;
+  --theme-2: #b0c4ef;
+  --theme-3: #ba81c5;
 }
 * {
   box-sizing: border-box;
@@ -284,10 +291,10 @@ h1 {
    before the banner slides in and the tiles fade out. Each .matched-theme-N
    sets --pulse to that theme's banner color so the same keyframes work for
    all four. */
-.tile.matched-theme-0 { --pulse: #f9df6d; }
-.tile.matched-theme-1 { --pulse: #a0c35a; }
-.tile.matched-theme-2 { --pulse: #b0c4ef; }
-.tile.matched-theme-3 { --pulse: #ba81c5; }
+.tile.matched-theme-0 { --pulse: var(--theme-0); }
+.tile.matched-theme-1 { --pulse: var(--theme-1); }
+.tile.matched-theme-2 { --pulse: var(--theme-2); }
+.tile.matched-theme-3 { --pulse: var(--theme-3); }
 .tile.matched {
   animation: matchPulse var(--match-pulse-ms) ease-out;
   border-color: var(--pulse);
@@ -477,10 +484,10 @@ button.secondary {
   display: block;
   margin-top: 2px;
 }
-.solved-row.theme-0 { background: #f9df6d; }
-.solved-row.theme-1 { background: #a0c35a; }
-.solved-row.theme-2 { background: #b0c4ef; }
-.solved-row.theme-3 { background: #ba81c5; }
+.solved-row.theme-0 { background: var(--theme-0); }
+.solved-row.theme-1 { background: var(--theme-1); }
+.solved-row.theme-2 { background: var(--theme-2); }
+.solved-row.theme-3 { background: var(--theme-3); }
 .solved-theme {
   font-weight: 700;
 }
