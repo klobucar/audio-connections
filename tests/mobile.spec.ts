@@ -1,21 +1,13 @@
-import { test, expect, devices, Page } from '@playwright/test';
+import { test, expect, devices } from '@playwright/test';
+import { gotoDay, groupByTheme, readTrackIds } from './helpers/game';
 
 // Pixel 5 (393×851) gives a representative narrow-mobile viewport while
 // staying on the Chromium engine we already have installed.
 test.use(devices['Pixel 5']);
 
-const APP_URL = '/?mock=1';
-
-async function gotoDay1(page: Page) {
-  await page.goto(APP_URL);
-  await page.getByTestId('day-btn-1').click();
-  await expect(page.getByTestId('puzzle-heading')).toHaveText('Audio Connections 1');
-  await expect(page.locator('.tile')).toHaveCount(16);
-}
-
 test.describe('Mobile (Pixel 5) layout', () => {
   test.beforeEach(async ({ page }) => {
-    await gotoDay1(page);
+    await gotoDay(page, 1);
   });
 
   test('page has no horizontal overflow', async ({ page }) => {
@@ -140,16 +132,9 @@ test.describe('Mobile (Pixel 5) layout', () => {
   });
 
   test('full gameplay flow works on mobile', async ({ page }) => {
-    const ids = await page.$$eval('.tile[data-track-id]', (els) =>
-      els.map((el) => Number((el as HTMLElement).dataset.trackId)),
-    );
-    const themes = new Map<number, number[]>();
-    for (const id of ids) {
-      const t = Math.floor(id / 4);
-      const arr = themes.get(t) ?? [];
-      arr.push(id);
-      themes.set(t, arr);
-    }
+    // Note: mobile uses .tap() instead of .click() for the select action,
+    // so we can't reuse the shared selectIds() helper here.
+    const themes = groupByTheme(await readTrackIds(page));
     for (const id of themes.get(0)!) {
       await page.getByTestId(`select-${id}`).tap();
     }

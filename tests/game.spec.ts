@@ -1,50 +1,12 @@
 import { test, expect, Page } from '@playwright/test';
 import { puzzles } from './helpers/puzzles';
-
-const APP_URL = '/?mock=1';
+import { APP_URL, gotoDay, groupByTheme, readTrackIds, selectIds } from './helpers/game';
 
 test('puzzles expose author metadata for every day', () => {
   for (const puzzle of puzzles) {
     expect(puzzle.author.trim().length).toBeGreaterThan(0);
   }
 });
-
-/** Switch to a specific day so tests are independent of the host clock. */
-async function gotoDay(page: Page, day: number) {
-  await page.goto(APP_URL);
-  await page.getByTestId(`day-btn-${day}`).click();
-  await expect(page.getByTestId('puzzle-heading')).toHaveText(`Audio Connections ${day}`);
-  await expect(page.getByTestId('grid')).toBeVisible();
-  await expect(page.locator('.tile')).toHaveCount(16);
-}
-
-/**
- * Map themeIdx → array of loaded track ids in the grid.
- * Each loaded track's stable `id` is its position (0–15) in the unshuffled
- * theme×track list, so `themeIdx = floor(id / 4)`.
- */
-function groupByTheme(ids: number[]): Map<number, number[]> {
-  const out = new Map<number, number[]>();
-  for (const id of ids) {
-    const t = Math.floor(id / 4);
-    const arr = out.get(t) ?? [];
-    arr.push(id);
-    out.set(t, arr);
-  }
-  return out;
-}
-
-async function readTrackIds(page: Page): Promise<number[]> {
-  return await page.$$eval('.tile[data-track-id]', (els) =>
-    els.map((el) => Number((el as HTMLElement).dataset.trackId)),
-  );
-}
-
-async function selectIds(page: Page, ids: number[]) {
-  for (const id of ids) {
-    await page.getByTestId(`select-${id}`).click();
-  }
-}
 
 test.describe('Audio Connections — Day 1 gameplay', () => {
   test.beforeEach(async ({ page }) => {

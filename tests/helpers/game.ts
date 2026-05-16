@@ -1,0 +1,43 @@
+// Shared Playwright helpers for game.spec.ts and mobile.spec.ts.
+//
+// These had drifted between the two specs: game.spec.ts defined them at the
+// top, mobile.spec.ts re-implemented the same logic inline. Keep one copy
+// here so the "select 4 tiles of theme N" pattern stays in sync.
+import { expect, type Page } from '@playwright/test';
+
+export const APP_URL = '/?mock=1';
+
+/** Map themeIdx → array of loaded track ids in the grid.
+ *  Each loaded track's stable `id` is its position (0–15) in the unshuffled
+ *  theme×track list, so `themeIdx = floor(id / 4)`. */
+export function groupByTheme(ids: number[]): Map<number, number[]> {
+  const out = new Map<number, number[]>();
+  for (const id of ids) {
+    const t = Math.floor(id / 4);
+    const arr = out.get(t) ?? [];
+    arr.push(id);
+    out.set(t, arr);
+  }
+  return out;
+}
+
+export async function readTrackIds(page: Page): Promise<number[]> {
+  return await page.$$eval('.tile[data-track-id]', (els) =>
+    els.map((el) => Number((el as HTMLElement).dataset.trackId)),
+  );
+}
+
+export async function selectIds(page: Page, ids: number[]): Promise<void> {
+  for (const id of ids) {
+    await page.getByTestId(`select-${id}`).click();
+  }
+}
+
+/** Switch to a specific day so tests are independent of the host clock. */
+export async function gotoDay(page: Page, day: number): Promise<void> {
+  await page.goto(APP_URL);
+  await page.getByTestId(`day-btn-${day}`).click();
+  await expect(page.getByTestId('puzzle-heading')).toHaveText(`Audio Connections ${day}`);
+  await expect(page.getByTestId('grid')).toBeVisible();
+  await expect(page.locator('.tile')).toHaveCount(16);
+}
