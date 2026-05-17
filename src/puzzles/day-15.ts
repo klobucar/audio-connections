@@ -19,7 +19,7 @@ const puzzle: Puzzle = {
       theme: 'City in the title',
       tracks: [
         { id: 217635876, artist: 'Elvis Presley', title: 'Viva Las Vegas' },
-        { id: 1440858721, artist: 'Frank Sinatra', title: 'Theme from New York, New York' },
+        { id: 300207270, artist: 'Randy Newman', title: 'I Love L.A.' },
         { id: 712606043, artist: 'Tony Bennett', title: 'I Left My Heart in San Francisco' },
         { id: 259204195, artist: 'Glenn Miller', title: "(I've Got a Gal In) Kalamazoo" },
       ],
