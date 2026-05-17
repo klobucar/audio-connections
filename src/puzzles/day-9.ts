@@ -25,21 +25,21 @@ const puzzle: Puzzle = {
       ],
     },
     {
+      theme: 'Famously samples another hit',
+      tracks: [
+        { id: 716691562, artist: 'Vanilla Ice', title: 'Ice Ice Baby', note: "Queen & David Bowie – 'Under Pressure'" },
+        { id: 1604645502, artist: 'Coolio', title: "Gangsta's Paradise", note: "Stevie Wonder – 'Pastime Paradise'" },
+        { id: 906589235, artist: 'Puff Daddy', title: "I'll Be Missing You", note: "The Police – 'Every Breath You Take'" },
+        { id: 724315201, artist: 'MC Hammer', title: "U Can't Touch This", note: "Rick James – 'Super Freak'" },
+      ],
+    },
+    {
       theme: 'Performed on The Simpsons',
       tracks: [
         { id: 1443811916, artist: 'Tom Jones', title: "It's Not Unusual", note: 'Marge Gets a Job' },
         { id: 1127410268, artist: 'Ramones', title: 'Blitzkrieg Bop', note: 'Rosebud' },
         { id: 721224391, artist: 'The Smashing Pumpkins', title: 'Zero', note: 'Homerpalooza' },
         { id: 1533513756, artist: 'The White Stripes', title: 'The Hardest Button to Button', note: 'Jazzy and the Pussycats' },
-      ],
-    },
-    {
-      theme: 'Sampled by the Beastie Boys',
-      tracks: [
-        { id: 580708184, artist: 'Led Zeppelin', title: 'When the Levee Breaks', note: "Rhymin & Stealin'" },
-        { id: 785239189, artist: 'Black Sabbath', title: 'Sweet Leaf', note: "Rhymin & Stealin'" },
-        { id: 1048472613, artist: 'Curtis Mayfield', title: 'Superfly', note: 'Egg Man' },
-        { id: 216553256, artist: 'Sly & The Family Stone', title: 'Loose Booty', note: 'Shadrach' },
       ],
     },
   ],
