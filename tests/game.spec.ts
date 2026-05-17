@@ -22,21 +22,21 @@ test.describe('Audio Connections — Day 1 gameplay', () => {
   test('submit button is disabled until 4 are selected; Deselect clears', async ({ page }) => {
     const submit = page.getByTestId('submit-btn');
     await expect(submit).toBeDisabled();
-    await expect(submit).toHaveText('Submit (0/4)');
+    await expect(submit).toContainText('SUBMIT 0/4');
 
     const ids = await readTrackIds(page);
     const themes = groupByTheme(ids);
     const firstTheme = themes.get(0)!;
     await selectIds(page, [firstTheme[0]!]);
-    await expect(submit).toHaveText('Submit (1/4)');
+    await expect(submit).toContainText('SUBMIT 1/4');
     await expect(submit).toBeDisabled();
 
     await selectIds(page, firstTheme.slice(1));
-    await expect(submit).toHaveText('Submit (4/4)');
+    await expect(submit).toContainText('SUBMIT 4/4');
     await expect(submit).toBeEnabled();
 
     await page.getByTestId('deselect-btn').click();
-    await expect(submit).toHaveText('Submit (0/4)');
+    await expect(submit).toContainText('SUBMIT 0/4');
     await expect(submit).toBeDisabled();
   });
 
@@ -114,13 +114,13 @@ test.describe('Audio Connections — Day 1 gameplay', () => {
       await expect(page.getByTestId(`solved-row-${t}`)).toBeVisible();
     }
     await expect(page.getByTestId('end-panel')).toBeVisible();
-    await expect(page.getByTestId('end-panel')).toContainText('Solved!');
+    await expect(page.getByTestId('end-panel')).toContainText('Mixtape Mastered.');
     await expect(page.getByTestId('share-text')).toContainText('Audio Connections 1');
     const share = await page.getByTestId('share-text').textContent();
     expect(share!.split('\n').length).toBe(5);
   });
 
-  test('four wrong guesses ends the game with "Game over"', async ({ page }) => {
+  test('four wrong guesses ends the game with "Out of Tape."', async ({ page }) => {
     const themes = groupByTheme(await readTrackIds(page));
     const wrongSets = [
       [themes.get(0)![0]!, themes.get(1)![0]!, themes.get(2)![0]!, themes.get(3)![0]!],
@@ -134,7 +134,7 @@ test.describe('Audio Connections — Day 1 gameplay', () => {
       await page.getByTestId('submit-btn').click();
     }
     await expect(page.getByTestId('end-panel')).toBeVisible();
-    await expect(page.getByTestId('end-panel')).toContainText('Game over');
+    await expect(page.getByTestId('end-panel')).toContainText('Out of Tape.');
     await expect(page.locator('.mistake-dot.used')).toHaveCount(4);
   });
 
@@ -145,6 +145,39 @@ test.describe('Audio Connections — Day 1 gameplay', () => {
     await input.fill('mine');
     await input.press('Enter');
     await expect(input).toHaveValue('mine');
+  });
+
+  test('solved rows render in the order the groups were found (survives reload)', async ({
+    page,
+  }) => {
+    const themes = groupByTheme(await readTrackIds(page));
+    // Solve deliberately out of theme-index order.
+    const solveOrder = [2, 0, 3, 1];
+    for (const t of solveOrder) {
+      await selectIds(page, themes.get(t)!);
+      await page.getByTestId('submit-btn').click();
+      await expect(page.getByTestId(`solved-row-${t}`)).toBeVisible();
+    }
+
+    const expected = solveOrder.map((t) => `solved-row-${t}`);
+    const domOrder = () =>
+      page
+        .locator('[data-testid^="solved-row-"]')
+        .evaluateAll((els) => els.map((e) => e.getAttribute('data-testid')));
+
+    // Rendered in solve order, not theme order (which would be 0,1,2,3).
+    expect(await domOrder()).toEqual(expected);
+
+    // The order is reconstructed from persisted guessHistory, so it must
+    // survive a reload rather than fall back to theme-index order. A
+    // finished day is no longer auto-resumed on cold-load (it jumps to the
+    // latest puzzle), so re-open Day 1 from the picker — its stored
+    // guessHistory must still drive the solve order.
+    await page.reload();
+    await openPicker(page);
+    await page.getByTestId('day-chip-1').click();
+    await expect(page.getByTestId('solved-row-1')).toBeVisible();
+    expect(await domOrder()).toEqual(expected);
   });
 });
 
@@ -170,7 +203,7 @@ test.describe('Audio Connections — day switching', () => {
       await page.getByTestId('submit-btn').click();
       await expect(page.getByTestId(`solved-row-${t}`)).toBeVisible();
     }
-    await expect(page.getByTestId('end-panel')).toContainText('Solved!');
+    await expect(page.getByTestId('end-panel')).toContainText('Mixtape Mastered.');
     await openPicker(page);
     await expect(page.getByTestId('day-chip-1')).toHaveClass(/day-chip-done/);
     await page.getByTestId('day-chip-2').click();
@@ -193,7 +226,7 @@ test.describe('Audio Connections — day switching', () => {
       await page.getByTestId('submit-btn').click();
       await expect(page.getByTestId(`solved-row-${t}`)).toBeVisible();
     }
-    await expect(page.getByTestId('end-panel')).toContainText('Solved!');
+    await expect(page.getByTestId('end-panel')).toContainText('Mixtape Mastered.');
     await openPicker(page);
     await expect(page.getByTestId('day-chip-1')).toHaveClass(/day-chip-done/);
 
@@ -220,7 +253,7 @@ test.describe('Audio Connections — day switching', () => {
       await selectIds(page, wrongSets[i]!);
       await page.getByTestId('submit-btn').click();
     }
-    await expect(page.getByTestId('end-panel')).toContainText('Game over');
+    await expect(page.getByTestId('end-panel')).toContainText('Out of Tape.');
     await openPicker(page);
     await expect(page.getByTestId('day-chip-1')).not.toHaveClass(/day-chip-done/);
     await expect(page.getByTestId('day-chip-1')).toHaveClass(/day-chip-failed/);
@@ -245,7 +278,7 @@ test.describe('Audio Connections — day switching', () => {
       await page.getByTestId('submit-btn').click();
     }
     await expect(page.getByTestId('end-panel')).toBeVisible();
-    await expect(page.getByTestId('end-panel')).toContainText('Game over');
+    await expect(page.getByTestId('end-panel')).toContainText('Out of Tape.');
 
     await openPicker(page);
     await page.getByTestId('day-chip-2').click();
@@ -253,7 +286,7 @@ test.describe('Audio Connections — day switching', () => {
     await expect(page.locator('.tile')).toHaveCount(16);
     await expect(page.getByTestId('end-panel')).toHaveCount(0);
     await expect(page.locator('.mistake-dot.used')).toHaveCount(0);
-    await expect(page.getByTestId('submit-btn')).toHaveText('Submit (0/4)');
+    await expect(page.getByTestId('submit-btn')).toContainText('SUBMIT 0/4');
   });
 });
 
@@ -313,13 +346,13 @@ test.describe('Audio Connections — persistence & reset', () => {
     await noteInput.fill('keep me');
     await noteInput.press('Enter');
 
-    await expect(page.getByTestId('submit-btn')).toHaveText('Submit (2/4)');
+    await expect(page.getByTestId('submit-btn')).toContainText('SUBMIT 2/4');
 
     await page.reload();
     // Persisted current day brings us back to Day 1 without an extra click.
     await expect(page.getByTestId('puzzle-heading')).toHaveText('Audio Connections 1');
     await expect(page.locator('.tile')).toHaveCount(16);
-    await expect(page.getByTestId('submit-btn')).toHaveText('Submit (2/4)');
+    await expect(page.getByTestId('submit-btn')).toContainText('SUBMIT 2/4');
     for (const id of firstTwo) {
       await expect(page.locator(`[data-testid="tile-${id}"]`)).toHaveClass(/selected/);
     }
@@ -357,25 +390,25 @@ test.describe('Audio Connections — persistence & reset', () => {
     await gotoDay(page, 1);
     const themes = groupByTheme(await readTrackIds(page));
     await selectIds(page, themes.get(0)!.slice(0, 3));
-    await expect(page.getByTestId('submit-btn')).toHaveText('Submit (3/4)');
+    await expect(page.getByTestId('submit-btn')).toContainText('SUBMIT 3/4');
 
     const resetBtn = page.getByTestId('reset-btn');
-    await expect(resetBtn).toHaveText('Reset puzzle');
+    await expect(resetBtn).toHaveText('Erase Tape');
 
     // First click arms the confirm state; selection remains.
     await resetBtn.click();
-    await expect(resetBtn).toHaveText('Click again to confirm reset');
-    await expect(page.getByTestId('submit-btn')).toHaveText('Submit (3/4)');
+    await expect(resetBtn).toHaveText('Confirm Erase');
+    await expect(page.getByTestId('submit-btn')).toContainText('SUBMIT 3/4');
 
     // Second click actually resets.
     await resetBtn.click();
-    await expect(resetBtn).toHaveText('Reset puzzle');
-    await expect(page.getByTestId('submit-btn')).toHaveText('Submit (0/4)');
+    await expect(resetBtn).toHaveText('Erase Tape');
+    await expect(page.getByTestId('submit-btn')).toContainText('SUBMIT 0/4');
 
     // The reset clears persisted state — reload should not bring selections back.
     await page.reload();
     await expect(page.locator('.tile')).toHaveCount(16);
-    await expect(page.getByTestId('submit-btn')).toHaveText('Submit (0/4)');
+    await expect(page.getByTestId('submit-btn')).toContainText('SUBMIT 0/4');
   });
 
   test('confirm state auto-cancels after timeout (no double-click within window)', async ({ page }) => {
@@ -385,12 +418,12 @@ test.describe('Audio Connections — persistence & reset', () => {
 
     const resetBtn = page.getByTestId('reset-btn');
     await resetBtn.click();
-    await expect(resetBtn).toHaveText('Click again to confirm reset');
+    await expect(resetBtn).toHaveText('Confirm Erase');
 
     // Wait long enough for the 3s confirm window to lapse.
-    await expect(resetBtn).toHaveText('Reset puzzle', { timeout: 5000 });
+    await expect(resetBtn).toHaveText('Erase Tape', { timeout: 5000 });
     // Selection should still be intact since reset never fired.
-    await expect(page.getByTestId('submit-btn')).toHaveText('Submit (2/4)');
+    await expect(page.getByTestId('submit-btn')).toContainText('SUBMIT 2/4');
   });
 });
 

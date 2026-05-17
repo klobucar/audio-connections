@@ -35,13 +35,16 @@ export function ResetButton({ onReset }: ResetButtonProps) {
   };
 
   return (
-    <button
-      type="button"
-      className={`reset-btn${confirming ? ' confirming' : ''}`}
-      onClick={handleClick}
-      data-testid="reset-btn"
-    >
-      {confirming ? 'Click again to confirm reset' : 'Reset puzzle'}
-    </button>
+    <div className="reset-row">
+      <button
+        type="button"
+        className={`reset-btn${confirming ? ' confirming' : ''}`}
+        onClick={handleClick}
+        data-testid="reset-btn"
+      >
+        <span className="toggle" />
+        <span>{confirming ? 'Confirm Erase' : 'Erase Tape'}</span>
+      </button>
+    </div>
   );
 }

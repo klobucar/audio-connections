@@ -1,63 +1,106 @@
+/* ==========================================================================
+   AUDIO CONNECTIONS DECK — design tokens (analog-tape visual pass)
+   Contract names read by JS / depended on by other components are preserved:
+     --exit-anim-ms, --match-pulse-ms, --theme-0..--theme-3,
+     --accent, --accent-glow, --bg-body, --ease, --spring, --text-*
+   ========================================================================== */
 :root {
-  --accent: #4a9eff;
-  --accent-soft: rgba(74, 158, 255, 0.12);
-  --accent-glow: 0 0 16px rgba(74, 158, 255, 0.25);
-  --bg-body: #0f1013;
-  --bg-surface: #191a1f;
-  --tile-grad-top: #2c2d33;
-  --tile-grad-bot: #191a1f;
-  --tile-border: #0c0d12;
-  --btn-grad-top: #3a3b42;
-  --btn-grad-bot: #252630;
-  --btn-border: #18191f;
-  --label-bg: #d8d0bc;
-  --label-bg-hover: #e4dcc8;
-  --label-bg-focus: #f0e8d4;
-  --label-border: #6a5a3a;
-  --label-border-focus: var(--accent);
-  --text-primary: #f0f0f4;
-  --text-secondary: #aaa;
-  --text-muted: #8a8a94;
-  --text-dim: #5a5a64;
+  /* ---- CONTRACT (do not rename) ------------------------------------------
+     JS reads --exit-anim-ms / --match-pulse-ms via getComputedStyle so the
+     setTimeout clearing exitingThemes / matchedThemes stays in sync with the
+     CSS transition + keyframe of the same length. */
+  --exit-anim-ms: 420ms;
+  --match-pulse-ms: 560ms;
+  /* Theme identity — retuned to feel like analog signals while staying in
+     their original hue families. All four pass WCAG AA against #1a1610
+     (--paper-ink, the solved-row body-text color). */
+  --theme-0: #e8b94d;           /* oxide gold      (was #f9df6d) */
+  --theme-1: #9bc25e;           /* pine LED        (was #a0c35a) */
+  --theme-2: #7fa8e3;           /* azure tape      (was #b0c4ef) */
+  --theme-3: #b489ce;           /* chrome violet   (was #ba81c5) */
 
-  /* Status colors for the day selector. The "-soft" variants are the matching
-     background fills; the solid hex is for borders, fg text, and chip glyphs. */
-  --status-done: #5fcf5f;
-  --status-done-soft: rgba(95, 207, 95, 0.10);
+  /* ---- CHASSIS ----------------------------------------------------------- */
+  --bg-room:        #0a0907;    /* the desk it sits on */
+  --bg-body:        #0a0907;    /* legacy alias — page background */
+  --bg-chassis:     #1c1d22;
+  --face-high:      #3a3c44;
+  --face-mid:       #2a2c33;
+  --face-low:       #1f2026;
+  --bevel-light:    rgba(255, 255, 255, 0.09);
+  --bevel-dark:     rgba(0, 0, 0, 0.65);
+  --recess:         #0e0f12;    /* inside of a milled cutout (grid bay) */
+  --screw:          #2a2b30;
+  --screw-slot:     #0a0b0e;
+
+  /* ---- PAPER / LABEL ----------------------------------------------------- */
+  --paper:          #e8dfc8;
+  --paper-warm:     #f1e8d0;
+  --paper-shadow:   #c5b994;
+  --paper-rule:     #b8aa83;
+  --paper-ink:      #1a1610;
+  --paper-ink-soft: #5a4d35;
+  --tape-strip:     #6a4a2a;
+  --tape-strip-hi:  #8a6638;
+
+  /* ---- LIGHTS / READOUTS ------------------------------------------------- */
+  --rec-red:        #e23a2e;
+  --rec-red-glow:   0 0 10px rgba(226, 58, 46, 0.7);
+  --vu-green:       #7ecf66;
+  --vu-amber:       #e9b13a;
+  --vu-red:         #e84a3a;
+  --led-off:        #2a221c;
+
+  /* ---- ACCENT / FOCUS ---------------------------------------------------- */
+  --accent:         #c8a14a;    /* warm brass — replaces the cold blue */
+  --accent-glow:    0 0 0 1px #c8a14a, 0 0 18px rgba(200, 161, 74, 0.45);
+
+  /* ---- TEXT -------------------------------------------------------------- */
+  --text-primary:   #f0eadb;
+  --text-secondary: #aea493;
+  --text-muted:     #6a6358;
+  --text-engraved:  #8a8579;
+
+  /* ---- MOTION ------------------------------------------------------------ */
+  --ease:           220ms cubic-bezier(.2, .7, .2, 1);
+  --spring:         360ms cubic-bezier(.2, .9, .25, 1.2);
+
+  /* ---- TYPE -------------------------------------------------------------- */
+  --font-display:   'Big Shoulders Display', 'Oswald', ui-sans-serif, system-ui, sans-serif;
+  --font-mono:      'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --font-body:      'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-hand:      'Caveat', 'Bradley Hand', 'Marker Felt', cursive;
+
+  /* ---- DAY SELECTOR / PICKER (merged from upstream #24) ----------------- */
+  --bg-surface:         #191a1f;
+  --text-dim:           #5a5a64;
+  --accent-soft:        rgba(200, 161, 74, 0.12);
+  --status-done:        #5fcf5f;
+  --status-done-soft:   rgba(95, 207, 95, 0.10);
   --status-in-progress: #dac96a;
   --status-in-progress-soft: rgba(218, 201, 106, 0.12);
   --status-in-progress-glow: rgba(218, 201, 106, 0.47);
-  --status-failed: #e26060;
+  --status-failed:      #e26060;
   --status-failed-soft: rgba(226, 96, 96, 0.12);
-  --status-locked: #3a3b42;
-
-  /* Picker surfaces. --picker-bg matches --bg-surface; called out separately
-     so the picker can re-skin without touching the rest of the app. */
-  --picker-bg: #191a1f;
-  --picker-raised: #22232a;
-  --picker-border: #2a2b32;
+  --status-locked:      #3a3b42;
+  --picker-bg:          #191a1f;
+  --picker-raised:      #22232a;
+  --picker-border:      #2a2b32;
   --picker-border-soft: #1d1e24;
-  --spring: 0.35s ease-out;
-  --ease: 0.2s ease;
-  /* Single source of truth for tile animation durations. JS reads these
-     via getComputedStyle so the setTimeout clearing `exitingThemes` /
-     `matchedThemes` can't drift away from the CSS that drives the
-     transition + keyframe of the same length. */
-  --exit-anim-ms: 350ms;
-  --match-pulse-ms: 500ms;
-  /* Theme colors used both by the solved-row banner background and by the
-     matched-theme tile pulse. Keep these in sync — they're the player's
-     visual identity for each group. */
-  --theme-0: #f9df6d;
-  --theme-1: #a0c35a;
-  --theme-2: #b0c4ef;
-  --theme-3: #ba81c5;
+  /* The "today / latest puzzle" indicator stays the upstream blue rather
+     than the cassette brass accent, so it reads as a distinct status. */
+  --day-today:          #4a9eff;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --exit-anim-ms: 1ms;
+    --match-pulse-ms: 1ms;
+  }
 }
 * {
   box-sizing: border-box;
 }
 body {
-  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-body);
   background: var(--bg-body);
   color: var(--text-primary);
   margin: 0;
@@ -74,28 +117,84 @@ body {
   .app-container {
     padding: 18px 14px 32px;
   }
-  /* The grid scrolls horizontally on narrow screens, so the focused note
-     input's -30% sideways expansion can poke past the scroll viewport.
-     Clamp it to the tile width. */
-  .tile-label-input:focus {
-    left: 0;
-    right: 0;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+  /* Bay/grid keep the 4-col 130px floor + horizontal scroll (contract). */
+  .bay { padding: 10px 8px; }
+  .grid { gap: 8px; }
+  .tile { min-height: 168px; }
+  .tile-label { margin: 7px 7px 0; padding: 6px 8px 7px; }
+  /* Android/Chrome render the 1px notecard rule lines inconsistently at
+     this pitch on mobile, so drop them — keep just the cream paper. */
+  .tile-label {
+    background: linear-gradient(180deg, var(--paper-warm) 0%, var(--paper) 100%);
+    background-position: 0 0;
+    background-repeat: no-repeat;
   }
+  /* Restore the ruled lines only on iOS, where they render cleanly.
+     `-webkit-touch-callout` is an iOS-WebKit-only property. */
+  @supports (-webkit-touch-callout: none) {
+    .tile-label {
+      background:
+        repeating-linear-gradient(0deg,
+          transparent 0 13px,
+          rgba(106, 90, 58, 0.16) 13px 14px),
+        linear-gradient(180deg, var(--paper-warm) 0%, var(--paper) 100%);
+      background-position: 0 18px, 0 0;
+      background-repeat: repeat, no-repeat;
+    }
+  }
+  .tile-screw.bl, .tile-screw.br { display: none; }
+  .tile-track-no { font-size: 7px; letter-spacing: 0.16em; }
+  .tile-label-input:not(:placeholder-shown) { font-size: 14px; }
+  .subtitle { font-size: 12px; margin: 12px 4px 16px; }
+  /* Solved labels: shrink the SIDE rail. */
+  .solved-row { padding: 10px 12px 12px 56px; }
+  .solved-side-badge { width: 36px; font-size: 8px; left: 8px; }
+  .solved-theme { font-size: 10px; letter-spacing: 0.18em; }
+  .solved-tracks { font-size: 11px; }
+  .mistakes-row { gap: 8px; font-size: 10px; letter-spacing: 0.16em; }
+  .mistakes-dots { padding: 3px 4px; }
+  .mistake-dot { width: 12px; height: 9px; }
+  /* Two transport keys must fit a 320px viewport. */
+  .controls { gap: 10px; }
+  .action {
+    min-width: 0;
+    flex: 1;
+    padding: 11px 12px 9px;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+  }
+  .end-panel { padding: 16px 14px; }
+  .end-panel::before, .end-panel::after { display: none; }
+  .end-panel h2 { font-size: 22px; }
+  .end-stamp { font-size: 14px; padding: 4px 8px; top: 12px; right: 12px; }
+  .share-text { font-size: 14px; padding: 10px 12px; }
+  .end-meta { grid-template-columns: 1fr 1fr; font-size: 9px; }
 }
 h1 {
   margin: 0 0 2px;
-  font-size: 28px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 38px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  line-height: 1.05;
 }
 .byline {
-  color: #aaa;
-  font-size: 13px;
-  margin-bottom: 10px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
 }
 .subtitle {
   color: var(--text-muted);
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   margin-bottom: 20px;
-  font-size: 14px;
+  font-size: 12px;
   text-align: center;
 }
 .unlock-countdown {
@@ -114,6 +213,20 @@ h1 {
   text-align: center;
   font-size: 14px;
 }
+/* Recessed cartridge bay milled into the chassis, around the grid. */
+.bay {
+  background: var(--recess);
+  border: 1px solid #050608;
+  border-radius: 6px;
+  padding: 14px 12px 16px;
+  margin: 0 auto 20px;
+  max-width: 720px;
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.7),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.02),
+    0 0 0 1px rgba(0, 0, 0, 0.6);
+  position: relative;
+}
 .grid {
   display: grid;
   /* Columns have a floor of 130px so tiles never get too cramped to use.
@@ -121,111 +234,191 @@ h1 {
      itself becomes horizontally scrollable rather than the page. */
   grid-template-columns: repeat(4, minmax(130px, 1fr));
   gap: 12px;
-  max-width: 720px;
-  margin: 0 auto 20px;
+  margin: 0 auto;
   overflow-x: auto;
-  /* Inset padding so the selected tile's scale + accent glow don't get
+  /* Inset padding so the selected tile's lift + accent glow don't get
      clipped at the leftmost/rightmost visible position when the grid is
      horizontally scrollable. */
-  padding: 4px 6px 8px;
+  padding: 4px 4px 8px;
   scrollbar-width: thin;
   -webkit-overflow-scrolling: touch;
 }
+/* ── Tile — mini cassette cartridge ──────────────────────────────────────
+   Layout: paper label (flexes) → cassette window → transport keys.
+   A 3px tape-feed progress bar is pinned to the bottom edge. */
 .tile {
-  background: linear-gradient(180deg, var(--tile-grad-top) 0%, var(--tile-grad-bot) 100%);
-  border: 2px solid var(--tile-border);
-  border-radius: 8px;
-  padding: 36px 8px 10px;
-  text-align: center;
-  transition: border-color var(--ease), transform var(--spring), box-shadow var(--ease);
-  min-height: 120px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  gap: 6px;
+  --tile-bg-top: #2c2d32;
+  --tile-bg-bot: #1a1b1f;
   position: relative;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
-    0 2px 6px rgba(0, 0, 0, 0.35);
-}
-.tile:hover {
-  border-color: rgba(255, 255, 255, 0.12);
-}
-.cassette-deck {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  width: 100%;
-  justify-content: center;
-  z-index: 0;
-}
-.reel {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
   background:
-    radial-gradient(circle at center, #080808 3px, transparent 3px),
-    radial-gradient(circle at center, #2a2a2a 4px, transparent 4px),
-    repeating-conic-gradient(from 0deg, transparent 0deg 24deg, rgba(255, 255, 255, 0.08) 24deg 36deg, transparent 36deg 60deg);
-  border: 2px solid #0a0a0a;
-  box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.04);
-}
-.tape-strip {
-  height: 2px;
-  flex: 1;
-  max-width: 14px;
-  background: #1a1a1a;
-  border-radius: 1px;
-}
-.tape-window {
-  width: 30px;
-  height: 14px;
-  border-radius: 2px;
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
+    repeating-linear-gradient(0deg,
+      rgba(255, 255, 255, 0.018) 0 1px,
+      transparent 1px 4px),
+    linear-gradient(180deg, var(--tile-bg-top) 0%, var(--tile-bg-bot) 100%);
+  border: 1px solid #0a0b0e;
+  border-radius: 5px;
+  padding: 0;
+  display: grid;
+  grid-template-rows: 1fr auto auto;
+  min-height: 184px;
+  transition: transform var(--spring), box-shadow var(--ease), border-color var(--ease);
+  box-shadow:
+    inset 0 1px 0 var(--bevel-light),
+    inset 0 -1px 0 var(--bevel-dark),
+    0 3px 8px rgba(0, 0, 0, 0.55);
   overflow: hidden;
 }
-.waveform-bar {
-  width: 2px;
+.tile:hover {
+  border-color: rgba(255, 255, 255, 0.14);
+  transform: translateY(-1px);
+}
+.tile-screw {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #45464a, #0a0b0e);
+  box-shadow: inset 0 -1px 1px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.03);
+  z-index: 3;
+}
+.tile-screw::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 45%, #050709 45% 55%, transparent 55%);
+  border-radius: 50%;
+}
+.tile-screw.tl { top: 5px; left: 5px; }
+.tile-screw.tr { top: 5px; right: 5px; }
+.tile-screw.bl { bottom: 5px; left: 5px; }
+.tile-screw.br { bottom: 5px; right: 5px; }
+
+/* ── Cassette window (twin reels + tape strip) ───────────────────────── */
+.cassette-deck {
+  position: relative;
+  margin: 6px 12px 0;
+  height: 50px;
+  background: linear-gradient(180deg, #0a0b0e 0%, #14151a 100%);
+  border: 1px solid #050608;
+  border-radius: 3px;
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.85),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.03);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  justify-items: center;
+  z-index: 1;
+}
+.cassette-deck::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 6px;
   height: 4px;
-  background: var(--accent);
+  background: linear-gradient(180deg, var(--tape-strip-hi), var(--tape-strip));
   border-radius: 1px;
-  opacity: 0.3;
-  transition: height 0.15s ease, opacity 0.15s ease;
+  opacity: 0.85;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
 }
-.tile.playing .waveform-bar {
-  animation: waveAnim 0.55s ease-in-out infinite alternate;
+.cassette-deck::after {
+  content: 'TYPE II';
+  position: absolute;
+  top: 4px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 6px;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  color: rgba(255, 255, 255, 0.18);
 }
-.tile.playing .waveform-bar:nth-child(1) { animation-delay: 0s; }
-.tile.playing .waveform-bar:nth-child(2) { animation-delay: 0.08s; }
-.tile.playing .waveform-bar:nth-child(3) { animation-delay: 0.16s; }
-.tile.playing .waveform-bar:nth-child(4) { animation-delay: 0.24s; }
-.tile.playing .waveform-bar:nth-child(5) { animation-delay: 0.32s; }
-@keyframes waveAnim {
-  0%   { height: 3px; opacity: 0.3; }
-  100% { height: 10px; opacity: 1; }
+.reel {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at center, #050505 0 2.5px, transparent 2.5px),
+    repeating-conic-gradient(from 0deg,
+      rgba(0, 0, 0, 0.75) 0deg 8deg,
+      rgba(255, 255, 255, 0.05) 8deg 43deg,
+      rgba(0, 0, 0, 0.75) 43deg 51deg,
+      rgba(255, 255, 255, 0.05) 51deg 86deg),
+    radial-gradient(circle at center, transparent 9px, #14151a 9px 11px, transparent 11px),
+    radial-gradient(circle at center, #5b3a1f 0 var(--wind, 11px), transparent var(--wind, 11px)),
+    radial-gradient(circle at 30% 25%, #3a3b40, #14151a 70%);
+  border: 1px solid #050507;
+  box-shadow:
+    inset 0 0 4px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 1px 2px rgba(0, 0, 0, 0.5);
+  z-index: 1;
 }
+.reel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 28%, #050505 1.4px, transparent 1.5px),
+    radial-gradient(circle at 69% 60%, #050505 1.4px, transparent 1.5px),
+    radial-gradient(circle at 31% 60%, #050505 1.4px, transparent 1.5px);
+}
+.reel.left  { --wind: 14px; }
+.reel.right { --wind: 7px; }
 @keyframes reelSpin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+  to { transform: rotate(360deg); }
 }
 .tile.playing .reel {
-  animation: reelSpin 1.2s linear infinite;
+  animation: reelSpin 1.4s linear infinite;
 }
+
+/* REC lamp buried dead-center in the cassette window — a recording light
+   glowing through smoked plastic. Dormant (dark filament) until playing,
+   then it blooms red between the two reels. */
+.rec-dot.tile-rec {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #2a0f0d;
+  box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+  transition: background var(--ease), box-shadow var(--ease), width var(--ease),
+    height var(--ease);
+}
+.tile.playing .rec-dot.tile-rec {
+  width: 7px;
+  height: 7px;
+  background: radial-gradient(circle,
+    #ff7a64 0%, var(--rec-red) 42%, rgba(226, 58, 46, 0) 78%);
+  box-shadow:
+    0 0 6px 2px rgba(226, 58, 46, 0.85),
+    0 0 16px 6px rgba(226, 58, 46, 0.42),
+    0 0 30px 12px rgba(226, 58, 46, 0.16);
+  animation: recPulse 1.4s ease-in-out infinite;
+}
+/* Opacity-only so the centering translate survives the keyframe. */
+@keyframes recPulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.5; }
+}
+
+/* Selection lift — the cued cartridge rises out of the bay. */
 .tile.selected {
   border-color: var(--accent);
-  transform: scale(1.02);
+  transform: translateY(-3px);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 var(--bevel-light),
+    inset 0 -1px 0 var(--bevel-dark),
     var(--accent-glow),
-    0 2px 8px rgba(0, 0, 0, 0.35);
+    0 8px 14px rgba(0, 0, 0, 0.6);
 }
 .tile-progress {
   position: absolute;
@@ -234,20 +427,22 @@ h1 {
   right: 0;
   height: 3px;
   background: rgba(255, 255, 255, 0.04);
-  border-radius: 0 0 6px 6px;
   overflow: hidden;
+  z-index: 2;
 }
 .tile-progress-fill {
   height: 100%;
-  background: var(--accent);
+  background: linear-gradient(90deg, var(--tape-strip-hi), var(--rec-red));
   width: 0%;
-  border-radius: inherit;
-  transition: width 50ms linear;
+  transition: width 80ms linear;
+  box-shadow: 0 0 6px rgba(226, 58, 46, 0.4);
 }
 .tile.exiting {
   opacity: 0;
-  transform: scale(0.85);
-  transition: opacity var(--exit-anim-ms) ease, transform var(--exit-anim-ms) ease;
+  transform: translateX(40px) scale(0.9);
+  transition:
+    opacity var(--exit-anim-ms) ease,
+    transform var(--exit-anim-ms) cubic-bezier(.4, 0, .7, .2);
   pointer-events: none;
 }
 /* Correct-guess pulse: the four tiles flash in their theme color for ~500ms
@@ -287,288 +482,615 @@ h1 {
       0 2px 8px rgba(0, 0, 0, 0.4);
   }
 }
-.tile-label-input {
-  background-color: #ddd5c0;
-  border: 1px solid #6a5a3a;
-  color: #1a1a1a;
-  font-size: 13px;
-  font-weight: 400;
-  text-align: center;
-  padding: 4px 6px;
+/* ── Paper label — the dominant top zone of the cartridge ────────────── */
+.tile-label {
+  position: relative;
+  margin: 8px 8px 0;
+  padding: 7px 9px 8px;
+  background:
+    repeating-linear-gradient(0deg,
+      transparent 0 13px,
+      rgba(106, 90, 58, 0.16) 13px 14px),
+    linear-gradient(180deg, var(--paper-warm) 0%, var(--paper) 100%);
+  background-position: 0 18px, 0 0;
+  background-repeat: repeat, no-repeat;
+  border: 1px solid var(--paper-shadow);
   border-radius: 2px;
-  font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif;
-  letter-spacing: 0.3px;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.4),
+    inset 0 -8px 12px rgba(184, 169, 115, 0.18);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.tile-label::after {
+  /* dog-ear / sticker-tear at the top-right corner */
+  content: '';
   position: absolute;
-  top: 8px;
-  left: 8px;
-  right: 8px;
+  top: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  background: linear-gradient(225deg,
+    transparent 0 50%,
+    rgba(0, 0, 0, 0.18) 50% 52%,
+    var(--paper-shadow) 52% 100%);
+  border-bottom-left-radius: 2px;
+  opacity: 0.6;
+}
+.tile-track-no {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--paper-ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-bottom: 4px;
+  border-bottom: 1px dashed rgba(106, 90, 58, 0.35);
+  position: relative;
   z-index: 1;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.4);
-  transition: left 0.18s ease, right 0.18s ease, padding 0.18s ease, font-size 0.18s ease,
-    background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>');
-  background-repeat: no-repeat;
-  background-position: right 5px center;
+}
+.tile-label-input {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  display: block;
+  background: transparent;
+  border: none;
+  color: var(--paper-ink);
+  /* mono "typewriter" when empty, handwriting when filled */
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  padding: 6px 0 0;
+  outline: none;
+  text-align: left;
+  position: relative;
+  z-index: 1;
+  /* Multi-line note: soft-wrap (incl. long unbroken titles), no manual
+     resize, no scrollbars — it grows within the paper label. */
+  resize: none;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 .tile-label-input::placeholder {
-  color: #999;
-  font-weight: 400;
-}
-.tile-label-input:hover {
-  background-color: #e8e0cb;
-  border-color: #4a3a1a;
+  color: rgba(26, 22, 16, 0.32);
+  font-style: italic;
+  font-family: var(--font-mono);
+  font-size: 11px;
 }
 .tile-label-input:focus {
-  border-color: #4a9eff;
-  background-color: #f4eeda;
   outline: none;
-  background-image: none;
-  left: -30%;
-  right: -30%;
-  font-size: 13px;
-  padding: 8px 10px;
-  z-index: 20;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.65), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
 }
 .tile-label-input:not(:placeholder-shown) {
-  background-image: none;
+  font-family: var(--font-hand);
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1.2;
+  letter-spacing: 0.005em;
+  color: #0d3a72; /* ballpoint blue */
+  transform: rotate(-1.2deg);
+  transform-origin: left top;
+  padding-top: 4px;
 }
+.tile-label:focus-within {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1.5px var(--accent),
+    inset 0 -8px 12px rgba(184, 169, 115, 0.18);
+}
+/* ── Transport keys ──────────────────────────────────────────────────── */
 .tile-actions {
-  display: flex;
-  gap: 4px;
-  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 8px 10px 12px;
+  z-index: 1;
 }
-.play-btn {
-  background: linear-gradient(180deg, #4a4a4a 0%, #2a2a2a 100%);
-  border: 1px solid #1a1a1a;
-  color: #ddd;
-  padding: 6px 8px;
-  border-radius: 3px;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  flex: 1;
+.play-btn,
+.select-btn {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
-  z-index: 1;
+  gap: 4px;
+  border: 1px solid #050608;
+  border-radius: 3px;
+  padding: 7px 6px 6px;
+  background: linear-gradient(180deg, #3a3b41 0%, #1c1d22 100%);
+  color: #d4cebd;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
-    0 1px 2px rgba(0, 0, 0, 0.4);
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    0 2px 0 #050608,
+    0 3px 4px rgba(0, 0, 0, 0.5);
+  transition: transform 80ms ease, box-shadow 80ms ease, background var(--ease);
 }
-.play-btn:hover {
-  background: linear-gradient(180deg, #595959 0%, #383838 100%);
-  color: #fff;
+.play-btn:active:not(:disabled),
+.select-btn:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    0 0 0 #050608,
+    0 1px 2px rgba(0, 0, 0, 0.5);
+}
+.play-btn:disabled,
+.select-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.play-btn .icon {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-left: 7px solid currentColor;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+}
+.play-btn.playing .icon {
+  border: none;
+  width: 8px;
+  height: 8px;
+  background: linear-gradient(90deg,
+    currentColor 0 3px, transparent 3px 5px, currentColor 5px 8px);
 }
 .play-btn.playing {
-  background: linear-gradient(180deg, #d57070 0%, #a83838 100%);
-  border-color: #6a1c1c;
-  color: white;
-}
-.play-btn.playing:hover {
-  background: linear-gradient(180deg, #e58080 0%, #b84444 100%);
-}
-.play-btn:disabled {
-  background: linear-gradient(180deg, #555 0%, #333 100%);
-  border-color: #1a1a1a;
-  cursor: not-allowed;
-}
-.select-btn {
-  background: linear-gradient(180deg, #4a4a4a 0%, #2a2a2a 100%);
-  border: 1px solid #1a1a1a;
-  color: #ddd;
-  padding: 6px 8px;
-  border-radius: 3px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.4px;
-  cursor: pointer;
-  flex: 1;
-  position: relative;
-  z-index: 1;
+  background: linear-gradient(180deg, #cf3a30 0%, #761814 100%);
+  color: #fff8e8;
+  border-color: #3a0a08;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
-    0 1px 2px rgba(0, 0, 0, 0.4);
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    0 2px 0 #2a0806,
+    0 3px 10px rgba(226, 58, 46, 0.4);
 }
 .tile.selected .select-btn {
-  background: linear-gradient(180deg, #5599df 0%, #2870be 100%);
-  border-color: #1d5396;
-  color: white;
+  background: linear-gradient(180deg, #d2a648 0%, #7d5d1c 100%);
+  color: #14110a;
+  border-color: #2a1f08;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.45),
+    0 0 0 #2a1f08,
+    0 0 16px rgba(200, 161, 74, 0.45);
+  transform: translateY(1px);
 }
+
+/* Spinning reels, REC blink, match pulse, and the spool-out slide all
+   degrade to no motion. (Durations are also clamped to 1ms in :root.) */
+@media (prefers-reduced-motion: reduce) {
+  .tile.playing .reel { animation: none; }
+  .tile.playing .rec-dot.tile-rec { animation: none; }
+  .tile.matched { animation: none; }
+  .tile.exiting { transition: opacity 1ms; transform: none; }
+}
+/* ── Controls — chunky transport keys ────────────────────────────────── */
 .controls {
   max-width: 720px;
-  margin: 0 auto;
+  margin: 6px auto 16px;
   display: flex;
-  gap: 12px;
+  gap: 14px;
   justify-content: center;
 }
-button.action {
-  background: #4a9eff;
-  border: none;
-  color: white;
-  padding: 12px 24px;
-  border-radius: 6px;
+.action {
+  position: relative;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 14px 28px 12px;
+  border-radius: 4px;
+  border: 1px solid #050608;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
+  background: linear-gradient(180deg, #3a3b41 0%, #1c1d22 100%);
+  color: #d4cebd;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    0 3px 0 #050608,
+    0 4px 6px rgba(0, 0, 0, 0.5);
+  transition: transform 80ms ease, box-shadow 80ms ease;
+  min-width: 160px;
 }
-button.action:disabled {
-  background: #444;
+.action:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    0 0 0 #050608,
+    0 1px 2px rgba(0, 0, 0, 0.5);
+}
+.action:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
 }
-button.secondary {
-  background: transparent;
-  border: 1px solid #555;
-  color: #ccc;
+.action.primary {
+  background: linear-gradient(180deg, #d2a648 0%, #7d5d1c 100%);
+  color: #14110a;
+  border-color: #2a1f08;
 }
+.action.primary:disabled {
+  background: linear-gradient(180deg, #3a3b41 0%, #1c1d22 100%);
+  color: #6a6358;
+}
+.action .key-stripe {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  margin-top: 3px;
+  color: rgba(0, 0, 0, 0.45);
+}
+.action.secondary .key-stripe {
+  color: rgba(255, 255, 255, 0.25);
+}
+/* ── Solved rows — printed cassette tape labels ──────────────────────── */
 .solved {
   max-width: 720px;
-  margin: 0 auto 16px;
+  margin: 0 auto 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 .solved-row {
-  padding: 12px 16px;
-  margin-bottom: 8px;
-  border-radius: 8px;
-  color: #1a1a1a;
-  /* Note: don't use var(--spring) here. --spring is "0.35s ease-out", and
-     in the animation shorthand the parser reads the 0.35s as animation-delay,
-     producing a 350ms gap where the element shows un-animated before sliding
-     in. Specify the timing-function directly instead. */
-  animation: bannerSlide 0.45s ease-out;
+  position: relative;
+  padding: 12px 16px 14px 76px;
+  border-radius: 3px;
+  color: var(--paper-ink);
+  /* Note: don't fold --spring into this shorthand — its leading duration
+     would be read as animation-delay. Spell the timing function out. */
+  animation: bannerSlide 440ms cubic-bezier(.2, .7, .2, 1) both;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(0, 0, 0, 0.35);
 }
 @keyframes bannerSlide {
-  0%   { opacity: 0; transform: translateY(8px) scale(0.96); }
-  100% { opacity: 1; transform: translateY(0) scale(1); }
+  from { transform: translateY(-6px) scaleY(0.94); }
+  to   { transform: translateY(0) scaleY(1); }
 }
-.solved-track-item {
-  display: block;
-  margin-top: 2px;
+.solved-side-badge {
+  position: absolute;
+  left: 10px;
+  top: 12px;
+  bottom: 12px;
+  width: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  background: rgba(0, 0, 0, 0.18);
+  border-radius: 2px;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  color: rgba(0, 0, 0, 0.7);
+  text-orientation: mixed;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  user-select: none;
 }
 .solved-row.theme-0 { background: var(--theme-0); }
 .solved-row.theme-1 { background: var(--theme-1); }
 .solved-row.theme-2 { background: var(--theme-2); }
 .solved-row.theme-3 { background: var(--theme-3); }
 .solved-theme {
+  font-family: var(--font-mono);
   font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.35);
+  padding-bottom: 4px;
+  margin-bottom: 4px;
 }
 .solved-tracks {
-  font-size: 13px;
-  margin-top: 4px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+.solved-track-item {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: 6px;
+}
+.solved-track-no {
+  color: rgba(0, 0, 0, 0.55);
+  font-weight: 700;
 }
 .solved-title {
-  color: #1a1a1a;
-  font-weight: 600;
+  font-weight: 700;
+  color: var(--paper-ink);
 }
 .solved-artist {
-  color: #4a4a4a;
+  color: rgba(0, 0, 0, 0.7);
 }
 .solved-note {
-  color: #4a4a4a;
+  color: rgba(0, 0, 0, 0.55);
   font-style: italic;
 }
+/* ── Mistakes — 4-LED VU-style meter ─────────────────────────────────── */
 .mistakes-row {
   max-width: 720px;
-  margin: 4px auto 12px;
   display: flex;
-  justify-content: center;
   align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  color: #888;
+  justify-content: center;
+  gap: 14px;
+  margin: 8px auto 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-engraved);
+  white-space: nowrap;
 }
 .mistakes-dots {
   display: flex;
-  gap: 6px;
+  gap: 4px;
+  padding: 4px 6px;
+  background: var(--recess);
+  border: 1px solid #050608;
+  border-radius: 3px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.7);
 }
 .mistake-dot {
-  width: 10px;
+  width: 14px;
   height: 10px;
-  border-radius: 50%;
-  background: #aaa;
-  transition: background 0.3s ease;
+  border-radius: 1px;
+  background: var(--vu-green);
+  box-shadow: 0 0 5px rgba(126, 207, 102, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transition: background var(--ease), box-shadow var(--ease);
+}
+.mistake-dot.warn {
+  background: var(--vu-amber);
+  box-shadow: 0 0 5px rgba(233, 177, 58, 0.55);
+}
+.mistake-dot.danger {
+  background: var(--vu-red);
+  box-shadow: 0 0 6px rgba(232, 74, 58, 0.65);
 }
 .mistake-dot.used {
-  background: #3a3a3a;
-  animation: dotLost 0.5s ease-out;
+  background: var(--led-off);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.5);
+  animation: dotLost 380ms ease-out;
 }
 @keyframes dotLost {
-  0%   { background: #aaa; transform: scale(1); }
-  35%  { background: #ff6b6b; transform: scale(1.5); }
-  100% { background: #3a3a3a; transform: scale(1); }
+  0%   { background: var(--vu-red); box-shadow: 0 0 14px var(--vu-red); transform: scaleX(1.3); }
+  100% { background: var(--led-off); box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.5); transform: scaleX(1); }
 }
+@media (prefers-reduced-motion: reduce) {
+  .mistake-dot.used { animation: none; }
+}
+/* ── EndPanel — printed J-card insert ────────────────────────────────── */
 .end-panel {
   max-width: 720px;
-  margin: 24px auto 0;
-  background: #2a2a2a;
-  border: 1px solid #444;
-  border-radius: 8px;
-  padding: 20px;
-  text-align: center;
+  margin: 16px auto;
+  background: linear-gradient(180deg, var(--paper-warm) 0%, var(--paper) 100%);
+  border: 1px solid var(--paper-shadow);
+  border-radius: 2px;
+  padding: 22px 26px;
+  color: var(--paper-ink);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  font-family: var(--font-mono);
+}
+/* Symmetric perforated tear edges down both sides of the insert. */
+.end-panel::before,
+.end-panel::after {
+  content: '';
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  width: 6px;
+  background: radial-gradient(circle at center, var(--paper-shadow) 1.5px, transparent 1.6px);
+  background-size: 6px 8px;
+  opacity: 0.4;
+  pointer-events: none;
+}
+.end-panel::before { left: 14px; }
+.end-panel::after { right: 14px; }
+/* Big faint pressing-plant wordmark, watermarked behind the content. */
+.end-watermark {
+  position: absolute;
+  left: 50%;
+  top: 54%;
+  transform: translate(-50%, -50%) rotate(-7deg);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(54px, 13vw, 124px);
+  letter-spacing: 0.02em;
+  line-height: 0.9;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--paper-ink);
+  opacity: 0.045;
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+}
+/* Runout / matrix code, like the etched text in a record's dead wax. */
+.end-runout {
+  margin-top: 12px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--paper-ink-soft);
+  opacity: 0.7;
+}
+/* Keep all real content above the watermark. */
+.end-jcard-header,
+.end-panel h2,
+.end-subhead,
+.end-meta,
+.share-text,
+.copy-btn,
+.end-runout,
+.end-stamp {
+  position: relative;
+  z-index: 1;
+}
+.end-jcard-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--paper-ink-soft);
+  border-bottom: 1px solid var(--paper-rule);
+  padding-bottom: 8px;
+  margin-bottom: 10px;
 }
 .end-panel h2 {
-  margin: 0 0 8px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 30px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 4px 0 10px;
+}
+.end-panel.win h2 { color: #2d5a2a; }
+.end-panel.loss h2 { color: #8a1d16; }
+.end-subhead {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--paper-ink-soft);
+  margin: -4px 0 12px;
+}
+.end-stamp {
+  position: absolute;
+  top: 56px;
+  right: 36px;
+  font-family: var(--font-display);
+  font-weight: 700;
   font-size: 22px;
+  letter-spacing: 0.16em;
+  border: 3px solid currentColor;
+  padding: 6px 12px;
+  border-radius: 4px;
+  transform: rotate(-8deg);
+  opacity: 0.85;
+  text-transform: uppercase;
 }
-.end-panel.win h2 {
-  color: #5fcf5f;
+.end-panel.win .end-stamp { color: #2d5a2a; }
+.end-panel.loss .end-stamp { color: #8a1d16; }
+.end-meta {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--paper-ink-soft);
+  margin-bottom: 10px;
 }
-.end-panel.loss h2 {
-  color: #ff6b6b;
+.end-meta dt {
+  font-weight: 700;
+  color: var(--paper-ink);
+}
+.end-meta dd {
+  margin: 0;
 }
 .share-text {
-  background: #1a1a1a;
-  border: 1px solid #444;
-  border-radius: 4px;
-  padding: 14px;
-  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  background: transparent;
+  border: 1px dashed var(--paper-rule);
+  border-radius: 2px;
+  padding: 12px 14px;
+  font-family: var(--font-mono);
   font-size: 16px;
   line-height: 1.5;
   text-align: left;
   white-space: pre;
-  margin: 14px auto;
-  display: inline-block;
+  margin: 10px 0;
+  display: block;
+  color: var(--paper-ink);
   user-select: all;
 }
 .copy-btn {
-  background: #4a9eff;
+  background: var(--paper-ink);
   border: none;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 6px;
+  color: var(--paper);
+  padding: 10px 22px;
+  border-radius: 2px;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-  display: block;
-  margin: 0 auto;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  display: inline-block;
+  white-space: nowrap;
+  margin-top: 6px;
 }
-.copy-btn:hover {
-  background: #5aaeff;
-}
-.copy-btn.copied {
-  background: #5fcf5f;
+.copy-btn:hover { background: #2a2218; }
+.copy-btn.copied { background: #2d5a2a; }
+/* ── Reset — toggle switch with confirm flip ─────────────────────────── */
+.reset-row {
+  display: flex;
+  justify-content: center;
 }
 .reset-btn {
-  display: block;
-  margin: 14px auto 0;
-  background: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px auto 0;
+  background: transparent;
   border: none;
-  color: var(--text-muted);
-  font-size: 12px;
-  font-family: inherit;
   cursor: pointer;
-  text-decoration: underline;
-  padding: 4px 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 6px 10px;
+}
+.reset-btn .toggle {
+  width: 26px;
+  height: 14px;
+  background: var(--recess);
+  border: 1px solid #050608;
+  border-radius: 2px;
+  position: relative;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.7);
+}
+.reset-btn .toggle::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  top: 1px;
+  left: 1px;
+  background: linear-gradient(180deg, #d4cebd, #6a6358);
+  border-radius: 1px;
+  transition: left var(--ease), background var(--ease);
 }
 .reset-btn:hover {
   color: var(--text-secondary);
 }
 .reset-btn.confirming {
-  color: #ff6b6b;
-  text-decoration: none;
-  font-weight: 600;
+  color: var(--rec-red);
+}
+.reset-btn.confirming .toggle::after {
+  left: 13px;
+  background: linear-gradient(180deg, #e85a4a, #8a1d16);
 }
 
 /* ==========================================================================
@@ -605,8 +1127,8 @@ button.secondary {
 
 /* status palettes */
 .day-chip-today {
-  background: var(--accent);
-  border: 1px solid var(--accent);
+  background: var(--day-today);
+  border: 1px solid var(--day-today);
   color: #fff;
 }
 .day-chip-done,
@@ -642,7 +1164,7 @@ button.secondary {
    the solid "today" style (e.g. today AND in-progress). Drawn as an inset
    shadow so it doesn't change the layout box. */
 .day-chip-today-ring {
-  box-shadow: inset 0 0 0 2px var(--accent);
+  box-shadow: inset 0 0 0 2px var(--day-today);
 }
 
 .day-chip-num { display: inline-block; }
@@ -699,7 +1221,7 @@ button.secondary {
   flex: 0 0 auto;
   background: var(--text-muted);
 }
-.day-pill-dot-today    { background: var(--accent); }
+.day-pill-dot-today    { background: var(--day-today); }
 .day-pill-dot-done     { background: var(--status-done); }
 .day-pill-dot-inProgress {
   background: var(--status-in-progress);

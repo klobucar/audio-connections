@@ -45,21 +45,38 @@ export function Tile({
 
   return (
     <div className={tileClass} data-track-id={track.id} data-testid={`tile-${track.id}`}>
-      <input
-        className="tile-label-input"
-        type="text"
-        placeholder={`Track ${index + 1}`}
-        value={note}
-        onChange={(e) => onNoteChange(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === 'Escape') {
-            e.preventDefault();
-            (e.target as HTMLInputElement).blur();
-          }
-        }}
-        aria-label={`Note for track ${index + 1}`}
-      />
-      <CassetteDeck />
+      <span className="tile-screw tl" />
+      <span className="tile-screw tr" />
+      <span className="tile-screw bl" />
+      <span className="tile-screw br" />
+
+      <div className="tile-label">
+        <div className="tile-track-no">NO. {String(index + 1).padStart(2, '0')} · C-90</div>
+        <textarea
+          className="tile-label-input"
+          placeholder="write title…"
+          rows={2}
+          value={note}
+          onChange={(e) => onNoteChange(e.target.value)}
+          onKeyDown={(e) => {
+            // Enter commits/blurs (no newline) so the note stays one logical
+            // value; Escape also blurs. Wrapping is soft (visual) only.
+            if (e.key === 'Enter' || e.key === 'Escape') {
+              e.preventDefault();
+              (e.target as HTMLTextAreaElement).blur();
+            }
+          }}
+          onBlur={(e) => {
+            // Once not editing, show the note from the top so a long title
+            // reads from its start rather than scrolled to the caret.
+            e.target.scrollTop = 0;
+          }}
+          aria-label={`Note for track ${index + 1}`}
+        />
+      </div>
+
+      <CassetteDeck playing={playing} progress={progress} />
+
       <div className="tile-actions">
         <button
           type="button"
@@ -69,7 +86,8 @@ export function Tile({
           aria-label={playing ? 'Pause' : 'Play'}
           data-testid={`play-${track.id}`}
         >
-          {playing ? '⏸' : '▶'}
+          <span className="icon" />
+          <span>{playing ? 'STOP' : 'PLAY'}</span>
         </button>
         <button
           type="button"
@@ -78,9 +96,10 @@ export function Tile({
           disabled={disabled}
           data-testid={`select-${track.id}`}
         >
-          Select
+          {selected ? 'CUE ✓' : 'CUE'}
         </button>
       </div>
+
       <div className="tile-progress">
         <div className="tile-progress-fill" style={{ width: `${progressPct}%` }} />
       </div>

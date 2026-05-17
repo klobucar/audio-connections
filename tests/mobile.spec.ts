@@ -142,7 +142,7 @@ test.describe('Mobile (Pixel 5) layout', () => {
     for (const id of themes.get(0)!) {
       await page.getByTestId(`select-${id}`).tap();
     }
-    await expect(page.getByTestId('submit-btn')).toHaveText('Submit (4/4)');
+    await expect(page.getByTestId('submit-btn')).toContainText('SUBMIT 4/4');
     await page.getByTestId('submit-btn').tap();
     await expect(page.getByTestId('solved-row-0')).toBeVisible();
   });

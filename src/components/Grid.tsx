@@ -61,8 +61,9 @@ export function Grid({
   }, [visible.length]);
 
   return (
-    <div className="grid" data-testid="grid" ref={gridRef}>
-      {visible.map((track, idx) => (
+    <div className="bay">
+      <div className="grid" data-testid="grid" ref={gridRef}>
+        {visible.map((track, idx) => (
         <Tile
           key={track.id}
           track={track}
@@ -78,7 +79,8 @@ export function Grid({
           onSelect={() => onSelect(track.id)}
           onNoteChange={(val) => onNoteChange(track.id, val)}
         />
-      ))}
+        ))}
+      </div>
     </div>
   );
 }

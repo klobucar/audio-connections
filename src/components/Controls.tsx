@@ -9,9 +9,9 @@ interface ControlsProps {
 export function Controls({ selectedCount, gameOver, won, onDeselect, onSubmit }: ControlsProps) {
   const submitText = gameOver
     ? won
-      ? 'Solved'
-      : 'Game over'
-    : `Submit (${selectedCount}/4)`;
+      ? 'SOLVED'
+      : 'GAME OVER'
+    : `SUBMIT ${selectedCount}/4`;
   return (
     <div className="controls">
       <button
@@ -21,16 +21,18 @@ export function Controls({ selectedCount, gameOver, won, onDeselect, onSubmit }:
         disabled={gameOver || selectedCount === 0}
         data-testid="deselect-btn"
       >
-        Deselect
+        DESELECT
+        <span className="key-stripe">EJECT ◁</span>
       </button>
       <button
         type="button"
-        className="action"
+        className="action primary"
         onClick={onSubmit}
         disabled={gameOver || selectedCount !== 4}
         data-testid="submit-btn"
       >
         {submitText}
+        <span className="key-stripe">▷▷ PLAY</span>
       </button>
     </div>
   );

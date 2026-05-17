@@ -150,10 +150,23 @@ export function App() {
         }}
       />
       <Countdown puzzles={puzzles} unlockedDays={unlockedDays} onUnlock={onNaturalUnlock} />
-      <div className="subtitle">Find four groups of four. Tap to play, "Select" to group.</div>
-      <SolvedList themes={puzzle.themes} solvedThemes={session.solvedThemes} tracks={session.state.tracks} />
+      <div className="subtitle">
+        Find four groups of four · PLAY to preview · CUE to mark · SUBMIT when all four are cued
+      </div>
+      <SolvedList
+        themes={puzzle.themes}
+        solvedThemes={session.solvedThemes}
+        tracks={session.state.tracks}
+        guessHistory={session.state.guessHistory}
+      />
       {session.state.gameOver && (
-        <EndPanel won={session.won} day={puzzle.day} guessHistory={session.state.guessHistory} />
+        <EndPanel
+          won={session.won}
+          day={puzzle.day}
+          guessHistory={session.state.guessHistory}
+          author={puzzle.author}
+          date={dateText}
+        />
       )}
       <Grid
         tracks={session.state.tracks}
