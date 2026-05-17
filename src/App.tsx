@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { puzzles, MAX_MISTAKES, isReleased, latestReleasedIndex } from './puzzles';
-import { loadState, loadCurrentDay, saveCurrentDay } from './storage';
+import { loadCurrentDay, saveCurrentDay } from './storage';
+import { deriveDayStates } from './dayState';
+import { formatPuzzleDate } from './format';
 import { useAudio } from './hooks/useAudio';
 import { useKonami } from './hooks/useKonami';
 import { usePuzzleSession } from './hooks/usePuzzleSession';
@@ -14,11 +16,6 @@ import { EndPanel } from './components/EndPanel';
 import { ResetButton } from './components/ResetButton';
 
 const STATUS_TIMEOUT_MS = 2500;
-
-function formatPuzzleDate(isoDate: string): string {
-  const d = new Date(`${isoDate}T12:00:00Z`);
-  return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-}
 
 export function App() {
   const [currentIndex, setCurrentIndex] = useState(() => {
@@ -35,18 +32,14 @@ export function App() {
    *  ticking past a `releaseAt` (one at a time). Either case adds the day
    *  to this set; nobody reaches into module-level puzzle data anymore. */
   const [unlockedDays, setUnlockedDays] = useState<Set<number>>(() => new Set());
-  // Days the player has finished (all themes solved, no mistakes left). Seeded
-  // from localStorage so the green ✓ survives reloads.
-  const [completedDays, setCompletedDays] = useState<Set<number>>(() => {
-    const out = new Set<number>();
-    for (const p of puzzles) {
-      const s = loadState(p.day);
-      if (s && s.gameOver && s.solvedThemes.length === p.themes.length && s.mistakes < MAX_MISTAKES) {
-        out.add(p.day);
-      }
-    }
-    return out;
-  });
+  // Latest released puzzle. Marks the today-ring on a chip in the picker,
+  // and the pill uses it to flavor sublines ("Latest puzzle is Day N" when
+  // viewing an archive day). Switching days never changes it.
+  const todayDay = puzzles[latestReleasedIndex({ unlocked: unlockedDays })]!.day;
+  // Per-day status array derived from puzzle list + localStorage. Reseeded on
+  // session change so the picker reflects the latest play state without each
+  // chip having to subscribe to storage independently.
+  const [dayStates, setDayStates] = useState(() => deriveDayStates(puzzles, todayDay, unlockedDays));
 
   const statusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -114,24 +107,12 @@ export function App() {
     saveCurrentDay(puzzle.day);
   }, [puzzle.day]);
 
-  /* ── Recompute completedDays from localStorage on every session change.
-        The session's persist effect runs before this one (effects fire in
-        declaration order; usePuzzleSession is called above), so localStorage
-        is fresh for the current day — no need to special-case it against an
-        in-memory branch. */
+  /* ── Recompute per-day statuses from localStorage on every session change.
+        usePuzzleSession's persist effect runs first (declared above), so
+        localStorage is fresh for the current day. */
   useEffect(() => {
-    const next = new Set<number>();
-    for (const p of puzzles) {
-      const s = loadState(p.day);
-      if (s && s.gameOver && s.solvedThemes.length === p.themes.length && s.mistakes < MAX_MISTAKES) {
-        next.add(p.day);
-      }
-    }
-    setCompletedDays((prev) => {
-      if (prev.size === next.size && [...prev].every((d) => next.has(d))) return prev;
-      return next;
-    });
-  }, [session.state]);
+    setDayStates(deriveDayStates(puzzles, todayDay, unlockedDays));
+  }, [session.state, todayDay, unlockedDays]);
 
   const heading = `Audio Connections ${puzzle.day}`;
   const dateText = useMemo(() => formatPuzzleDate(puzzle.date), [puzzle.date]);
@@ -146,11 +127,13 @@ export function App() {
         by <span data-testid="puzzle-author">{puzzle.author}</span> · <span data-testid="puzzle-date">{dateText}</span>
       </div>
       <DaySelector
-        puzzles={puzzles}
-        currentIndex={currentIndex}
-        completedDays={completedDays}
-        unlockedDays={unlockedDays}
-        onSwitch={switchDay}
+        days={dayStates}
+        todayDay={todayDay}
+        currentDay={puzzle.day}
+        onSwitch={(day) => {
+          const idx = puzzles.findIndex((p) => p.day === day);
+          if (idx >= 0) switchDay(idx);
+        }}
       />
       <Countdown puzzles={puzzles} unlockedDays={unlockedDays} onUnlock={onNaturalUnlock} />
       <div className="subtitle">Find four groups of four. Tap to play, "Select" to group.</div>

@@ -1,6 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import { puzzles } from './helpers/puzzles';
-import { APP_URL, gotoDay, groupByTheme, readTrackIds, selectIds } from './helpers/game';
+import { APP_URL, gotoDay, openPicker, groupByTheme, readTrackIds, selectIds } from './helpers/game';
 
 test('puzzles expose author metadata for every day', () => {
   for (const puzzle of puzzles) {
@@ -151,11 +151,13 @@ test.describe('Audio Connections — Day 1 gameplay', () => {
 test.describe('Audio Connections — day switching', () => {
   test('Day 1, 2, 3 are all reachable when releaseAt has passed for them', async ({ page }) => {
     await page.goto(APP_URL);
-    await page.getByTestId('day-btn-1').click();
+    await openPicker(page);
+    await page.getByTestId('day-chip-1').click();
     await expect(page.getByTestId('puzzle-heading')).toHaveText('Audio Connections 1');
     await expect(page.locator('.tile')).toHaveCount(16);
 
-    await page.getByTestId('day-btn-2').click();
+    await openPicker(page);
+    await page.getByTestId('day-chip-2').click();
     await expect(page.getByTestId('puzzle-heading')).toHaveText('Audio Connections 2');
     await expect(page.locator('.tile')).toHaveCount(16);
   });
@@ -169,21 +171,21 @@ test.describe('Audio Connections — day switching', () => {
       await expect(page.getByTestId(`solved-row-${t}`)).toBeVisible();
     }
     await expect(page.getByTestId('end-panel')).toContainText('Solved!');
-    await expect(page.getByTestId('day-btn-1')).toHaveClass(/done/);
-
-    await page.getByTestId('day-btn-2').click();
+    await openPicker(page);
+    await expect(page.getByTestId('day-chip-1')).toHaveClass(/day-chip-done/);
+    await page.getByTestId('day-chip-2').click();
     // Wait for the new day's tiles to actually load before asserting, so the
     // check runs against the post-load state, not the brief stale window.
     await expect(page.getByTestId('puzzle-heading')).toHaveText('Audio Connections 2');
     await expect(page.locator('.tile')).toHaveCount(16);
 
-    await expect(page.getByTestId('day-btn-2')).not.toHaveClass(/done/);
-    await expect(page.getByTestId('day-btn-2')).not.toContainText('✓');
+    await openPicker(page);
+    await expect(page.getByTestId('day-chip-2')).not.toHaveClass(/day-chip-done/);
     // Day 1 still done.
-    await expect(page.getByTestId('day-btn-1')).toHaveClass(/done/);
+    await expect(page.getByTestId('day-chip-1')).toHaveClass(/day-chip-done/);
   });
 
-  test('winning a day marks its button done (green ✓), survives reload', async ({ page }) => {
+  test('winning a day marks its chip done, survives reload', async ({ page }) => {
     await gotoDay(page, 1);
     const themes = groupByTheme(await readTrackIds(page));
     for (let t = 0; t < 4; t++) {
@@ -192,17 +194,16 @@ test.describe('Audio Connections — day switching', () => {
       await expect(page.getByTestId(`solved-row-${t}`)).toBeVisible();
     }
     await expect(page.getByTestId('end-panel')).toContainText('Solved!');
-    const dayBtn = page.getByTestId('day-btn-1');
-    await expect(dayBtn).toHaveClass(/done/);
-    await expect(dayBtn).toContainText('✓');
+    await openPicker(page);
+    await expect(page.getByTestId('day-chip-1')).toHaveClass(/day-chip-done/);
 
-    // Reload: the green check persists thanks to localStorage seeding.
+    // Reload: the done state persists thanks to localStorage seeding.
     await page.reload();
-    await expect(page.getByTestId('day-btn-1')).toHaveClass(/done/);
-    await expect(page.getByTestId('day-btn-1')).toContainText('✓');
+    await openPicker(page);
+    await expect(page.getByTestId('day-chip-1')).toHaveClass(/day-chip-done/);
 
     // Other days remain un-done.
-    await expect(page.getByTestId('day-btn-2')).not.toHaveClass(/done/);
+    await expect(page.getByTestId('day-chip-2')).not.toHaveClass(/day-chip-done/);
   });
 
   test('losing a day does NOT mark it done', async ({ page }) => {
@@ -220,7 +221,9 @@ test.describe('Audio Connections — day switching', () => {
       await page.getByTestId('submit-btn').click();
     }
     await expect(page.getByTestId('end-panel')).toContainText('Game over');
-    await expect(page.getByTestId('day-btn-1')).not.toHaveClass(/done/);
+    await openPicker(page);
+    await expect(page.getByTestId('day-chip-1')).not.toHaveClass(/day-chip-done/);
+    await expect(page.getByTestId('day-chip-1')).toHaveClass(/day-chip-failed/);
   });
 
   test('losing one day does not leak fail state into the next day', async ({ page }) => {
@@ -244,7 +247,8 @@ test.describe('Audio Connections — day switching', () => {
     await expect(page.getByTestId('end-panel')).toBeVisible();
     await expect(page.getByTestId('end-panel')).toContainText('Game over');
 
-    await page.getByTestId('day-btn-2').click();
+    await openPicker(page);
+    await page.getByTestId('day-chip-2').click();
     await expect(page.getByTestId('puzzle-heading')).toHaveText('Audio Connections 2');
     await expect(page.locator('.tile')).toHaveCount(16);
     await expect(page.getByTestId('end-panel')).toHaveCount(0);
@@ -266,13 +270,15 @@ test.describe('Audio Connections — Konami unlock', () => {
     }
   }
 
-  test('the code unlocks every Day button', async ({ page }) => {
+  test('the code unlocks every Day chip', async ({ page }) => {
     await page.goto(APP_URL);
     await expect(page.getByTestId('grid')).toBeVisible();
     await typeKonami(page);
     await expect(page.getByTestId('status')).toContainText(/Konami/);
+    await openPicker(page);
     for (const p of puzzles) {
-      await expect(page.getByTestId(`day-btn-${p.day}`)).toBeEnabled();
+      await expect(page.getByTestId(`day-chip-${p.day}`)).toBeEnabled();
+      await expect(page.getByTestId(`day-chip-${p.day}`)).not.toHaveClass(/day-chip-locked/);
     }
   });
 
