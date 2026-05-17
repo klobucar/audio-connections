@@ -20,25 +20,31 @@ function deriveStatus(
   return 'unplayed';
 }
 
+export function deriveDayState(
+  p: Puzzle,
+  todayDay: number,
+  unlockedDays: ReadonlySet<number>,
+): DayState {
+  const released = isReleased(p, { unlocked: unlockedDays });
+  const save = released ? loadState(p.day) : null;
+  const groupsSolved = save?.solvedThemes.length ?? 0;
+  const mistakes = save?.mistakes ?? 0;
+  const isTodayDay = p.day === todayDay;
+  return {
+    day: p.day,
+    date: p.date,
+    releaseAt: p.releaseAt,
+    status: deriveStatus(released, isTodayDay, groupsSolved, mistakes),
+    mistakes,
+    groupsSolved,
+    isToday: isTodayDay,
+  };
+}
+
 export function deriveDayStates(
   puzzles: Puzzle[],
   todayDay: number,
   unlockedDays: ReadonlySet<number>,
 ): DayState[] {
-  return puzzles.map((p) => {
-    const released = isReleased(p, { unlocked: unlockedDays });
-    const save = released ? loadState(p.day) : null;
-    const groupsSolved = save?.solvedThemes.length ?? 0;
-    const mistakes = save?.mistakes ?? 0;
-    const isTodayDay = p.day === todayDay;
-    return {
-      day: p.day,
-      date: p.date,
-      releaseAt: p.releaseAt,
-      status: deriveStatus(released, isTodayDay, groupsSolved, mistakes),
-      mistakes,
-      groupsSolved,
-      isToday: isTodayDay,
-    };
-  });
+  return puzzles.map((p) => deriveDayState(p, todayDay, unlockedDays));
 }

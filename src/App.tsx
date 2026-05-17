@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { puzzles, MAX_MISTAKES, isReleased, latestReleasedIndex } from './puzzles';
 import { loadCurrentDay, saveCurrentDay } from './storage';
-import { deriveDayStates } from './dayState';
+import { deriveDayState, deriveDayStates } from './dayState';
 import { formatPuzzleDate } from './format';
 import { useAudio } from './hooks/useAudio';
 import { useKonami } from './hooks/useKonami';
@@ -19,12 +19,26 @@ const STATUS_TIMEOUT_MS = 2500;
 
 export function App() {
   const [currentIndex, setCurrentIndex] = useState(() => {
+    const latestIdx = latestReleasedIndex();
+    const latest = puzzles[latestIdx]!;
     const saved = loadCurrentDay();
-    if (saved !== null) {
-      const idx = puzzles.findIndex((p) => p.day === saved);
-      if (idx >= 0 && isReleased(puzzles[idx]!)) return idx;
-    }
-    return latestReleasedIndex();
+    if (saved === null) return latestIdx;
+    const savedIdx = puzzles.findIndex((p) => p.day === saved);
+    if (savedIdx < 0 || !isReleased(puzzles[savedIdx]!)) return latestIdx;
+
+    // Override the saved day only when the player has nothing to come back
+    // to: their last day is finished AND a fresh puzzle is waiting. If
+    // they're mid-play on the saved day, leave them on it; if the latest
+    // is already touched, no surprise switch.
+    const savedState = deriveDayState(puzzles[savedIdx]!, latest.day, new Set());
+    const savedTerminal =
+      savedState.status === 'done' ||
+      savedState.status === 'doneMistakes' ||
+      savedState.status === 'failed';
+    if (!savedTerminal) return savedIdx;
+    const latestState = deriveDayState(latest, latest.day, new Set());
+    const latestFresh = latestState.status === 'today' || latestState.status === 'unplayed';
+    return latestFresh ? latestIdx : savedIdx;
   });
 
   const [statusMsg, setStatusMsg] = useState('');
