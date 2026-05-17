@@ -800,6 +800,9 @@ button.secondary {
   height: 8px;
   border-radius: 50%;
 }
+.day-picker-header-counts .dot-done { background: var(--status-done); }
+.day-picker-header-counts .dot-failed { background: var(--status-failed); }
+.day-picker-header-counts .dot-in-progress { background: var(--status-in-progress); }
 .day-picker-close {
   background: transparent;
   border: none;

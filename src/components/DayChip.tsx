@@ -10,7 +10,6 @@ interface DayChipProps {
   mistakes?: number;
   size?: DayChipSize;
   onClick?: () => void;
-  tabIndex?: number;
   onKeyDown?: (e: React.KeyboardEvent<HTMLButtonElement>) => void;
   ariaLabel?: string;
   /** Hover tooltip (native title). Used for locked chips' release time. */
@@ -29,7 +28,6 @@ export const DayChip = forwardRef<HTMLButtonElement, DayChipProps>(function DayC
     mistakes = 0,
     size = 'md',
     onClick,
-    tabIndex,
     onKeyDown,
     ariaLabel,
     title,
@@ -70,7 +68,6 @@ export const DayChip = forwardRef<HTMLButtonElement, DayChipProps>(function DayC
       className={classes}
       onClick={onClick}
       onKeyDown={onKeyDown}
-      tabIndex={tabIndex}
       disabled={status === 'locked'}
       aria-label={ariaLabel ?? `Day ${day}`}
       title={title}

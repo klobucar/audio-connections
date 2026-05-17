@@ -5,7 +5,6 @@ import { DayChip } from './DayChip';
 
 interface DayPickerProps {
   days: DayState[];
-  selected: DayState;
   open: boolean;
   onClose: () => void;
   onSelect: (day: number) => void;
@@ -13,6 +12,18 @@ interface DayPickerProps {
 
 type SortMode = 'newest' | 'oldest' | 'unplayed';
 const SORT_KEY = 'audio-connections:dayPickerSort';
+
+/** Human-readable status text for screen readers and the legend. Keep keys
+ *  in sync with the DayStatus union in types.ts. */
+const STATUS_LABEL: Record<DayStatus, string> = {
+  today: 'unplayed',
+  done: 'solved',
+  doneMistakes: 'solved with mistakes',
+  inProgress: 'in progress',
+  failed: 'failed',
+  unplayed: 'unplayed',
+  locked: 'locked',
+};
 
 function loadSort(): SortMode {
   if (typeof localStorage === 'undefined') return 'newest';
@@ -30,7 +41,7 @@ function sortDays(days: DayState[], mode: SortMode): DayState[] {
 
 const GRID_COLS = 7;
 
-export function DayPicker({ days, selected: _selected, open, onClose, onSelect }: DayPickerProps) {
+export function DayPicker({ days, open, onClose, onSelect }: DayPickerProps) {
   const [sort, setSort] = useState<SortMode>(loadSort);
   const panelRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
@@ -133,12 +144,12 @@ export function DayPicker({ days, selected: _selected, open, onClose, onSelect }
         <div className="day-picker-header-summary">
           <span className="day-picker-header-total">{counts.total} puzzle{counts.total === 1 ? '' : 's'}</span>
           <span className="day-picker-header-counts">
-            <span><span className="dot" style={{ background: 'var(--status-done)' }} />{counts.solved} solved</span>
+            <span><span className="dot dot-done" />{counts.solved} solved</span>
             {counts.failed > 0 && (
-              <span><span className="dot" style={{ background: 'var(--status-failed)' }} />{counts.failed} failed</span>
+              <span><span className="dot dot-failed" />{counts.failed} failed</span>
             )}
             {counts.inProg > 0 && (
-              <span><span className="dot" style={{ background: 'var(--status-in-progress)' }} />{counts.inProg} in&nbsp;progress</span>
+              <span><span className="dot dot-in-progress" />{counts.inProg} in&nbsp;progress</span>
             )}
           </span>
         </div>
@@ -182,7 +193,7 @@ export function DayPicker({ days, selected: _selected, open, onClose, onSelect }
               size="lg"
               onClick={() => handlePick(d.day, d.status)}
               onKeyDown={(e) => handleChipKey(e, i)}
-              ariaLabel={`Day ${d.day} — ${d.status}${d.isToday ? ' (latest)' : ''}`}
+              ariaLabel={`Day ${d.day} — ${STATUS_LABEL[d.status]}${d.isToday ? ' (latest)' : ''}`}
               title={d.status === 'locked' && d.releaseAt ? `Unlocks ${formatReleaseAt(d.releaseAt)}` : undefined}
             />
           ))}

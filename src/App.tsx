@@ -32,8 +32,9 @@ export function App() {
    *  ticking past a `releaseAt` (one at a time). Either case adds the day
    *  to this set; nobody reaches into module-level puzzle data anymore. */
   const [unlockedDays, setUnlockedDays] = useState<Set<number>>(() => new Set());
-  // Today = latest released puzzle. The picker uses this to mark the "today"
-  // chip and to drive the hero card; switching days never changes it.
+  // Latest released puzzle. Marks the today-ring on a chip in the picker,
+  // and the pill uses it to flavor sublines ("Latest puzzle is Day N" when
+  // viewing an archive day). Switching days never changes it.
   const todayDay = puzzles[latestReleasedIndex({ unlocked: unlockedDays })]!.day;
   // Per-day status array derived from puzzle list + localStorage. Reseeded on
   // session change so the picker reflects the latest play state without each

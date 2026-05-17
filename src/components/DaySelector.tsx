@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { DayState } from '../types';
 import { DayStatusPill } from './DayStatusPill';
 import { DayPicker } from './DayPicker';
@@ -25,15 +25,8 @@ export function DaySelector({ days, todayDay, currentDay, onSwitch }: DaySelecto
     prevOpenRef.current = open;
   }, [open]);
 
-  const handleSelect = useCallback(
-    (day: number) => {
-      onSwitch(day);
-    },
-    [onSwitch],
-  );
-
   return (
-    <div className="day-pill-wrap" data-testid="day-selector">
+    <div className="day-pill-wrap">
       <DayStatusPill
         ref={pillRef}
         selected={selected}
@@ -43,10 +36,9 @@ export function DaySelector({ days, todayDay, currentDay, onSwitch }: DaySelecto
       />
       <DayPicker
         days={days}
-        selected={selected}
         open={open}
         onClose={() => setOpen(false)}
-        onSelect={handleSelect}
+        onSelect={onSwitch}
       />
     </div>
   );

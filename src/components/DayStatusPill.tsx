@@ -50,8 +50,9 @@ function buildText(s: DayState, todayDay: number): { primary: string; subline: s
 }
 
 function dotClass(s: DayState): string {
-  if (s.isToday && s.status === 'today') return 'day-pill-dot-today';
   switch (s.status) {
+    case 'today':
+      return 'day-pill-dot-today';
     case 'done':
     case 'doneMistakes':
       return 'day-pill-dot-done';
@@ -59,8 +60,6 @@ function dotClass(s: DayState): string {
       return 'day-pill-dot-inProgress';
     case 'failed':
       return 'day-pill-dot-failed';
-    case 'today':
-      return 'day-pill-dot-today';
     case 'locked':
     case 'unplayed':
     default:

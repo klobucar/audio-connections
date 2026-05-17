@@ -48,9 +48,3 @@ export async function openPicker(page: Page): Promise<void> {
   await page.getByTestId('day-selector-pill').click();
   await expect(page.getByTestId('day-picker')).toHaveClass(/open/);
 }
-
-/** Close the day picker (Esc) and wait for it to be hidden. */
-export async function closePicker(page: Page): Promise<void> {
-  await page.keyboard.press('Escape');
-  await expect(page.getByTestId('day-picker')).not.toHaveClass(/open/);
-}
