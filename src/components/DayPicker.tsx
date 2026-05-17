@@ -182,7 +182,7 @@ export function DayPicker({ days, selected: _selected, open, onClose, onSelect }
               size="lg"
               onClick={() => handlePick(d.day, d.status)}
               onKeyDown={(e) => handleChipKey(e, i)}
-              ariaLabel={`Day ${d.day} — ${d.status}${d.isToday ? ' (today)' : ''}`}
+              ariaLabel={`Day ${d.day} — ${d.status}${d.isToday ? ' (latest)' : ''}`}
               title={d.status === 'locked' && d.releaseAt ? `Unlocks ${formatReleaseAt(d.releaseAt)}` : undefined}
             />
           ))}
@@ -195,7 +195,7 @@ export function DayPicker({ days, selected: _selected, open, onClose, onSelect }
 
         <div className="day-picker-legend">
           {[
-            ['today', 'Today'],
+            ['today', 'Latest'],
             ['done', 'Solved'],
             ['doneMistakes', 'Solved with mistakes'],
             ['inProgress', 'In progress'],

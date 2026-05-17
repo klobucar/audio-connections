@@ -17,17 +17,17 @@ function buildText(s: DayState, todayDay: number): { primary: string; subline: s
   if (s.isToday) {
     switch (s.status) {
       case 'today':
-        return { primary: "Today's puzzle", subline: `${formatPuzzleDate(s.date)} · 0/4` };
+        return { primary: 'Latest puzzle', subline: `${formatPuzzleDate(s.date)} · 0/4` };
       case 'inProgress':
-        return { primary: "Today's puzzle", subline: `In progress · ${s.groupsSolved}/4 · ${mistakesText}` };
+        return { primary: 'Latest puzzle', subline: `In progress · ${s.groupsSolved}/4 · ${mistakesText}` };
       case 'done':
-        return { primary: 'Today · solved', subline: '4/4 · no mistakes · come back tomorrow' };
+        return { primary: 'Latest · solved', subline: '4/4 · no mistakes · come back tomorrow' };
       case 'doneMistakes':
-        return { primary: 'Today · solved', subline: `4/4 · ${mistakesText} · come back tomorrow` };
+        return { primary: 'Latest · solved', subline: `4/4 · ${mistakesText} · come back tomorrow` };
       case 'failed':
-        return { primary: 'Today · failed', subline: 'All 4 lives used' };
+        return { primary: 'Latest · failed', subline: 'All 4 lives used' };
       default:
-        return { primary: "Today's puzzle", subline: formatPuzzleDate(s.date) };
+        return { primary: 'Latest puzzle', subline: formatPuzzleDate(s.date) };
     }
   }
   // archive — the counter chip on the right carries "Day N", so primaries
@@ -45,7 +45,7 @@ function buildText(s: DayState, todayDay: number): { primary: string; subline: s
       return { primary: 'Locked', subline: 'Not yet released' };
     case 'unplayed':
     default:
-      return { primary: 'Unplayed', subline: `Today's puzzle is Day ${todayDay}` };
+      return { primary: 'Unplayed', subline: `Latest puzzle is Day ${todayDay}` };
   }
 }
 
