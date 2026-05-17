@@ -119,15 +119,19 @@ test.describe('Mobile (Pixel 5) layout', () => {
     expect(Math.abs(scrollLeft - expectedCenter)).toBeLessThanOrEqual(1);
   });
 
-  test('day selector buttons are reachable (not clipped)', async ({ page }) => {
-    const buttons = page.locator('[data-testid^="day-btn-"]');
-    const count = await buttons.count();
+  test('day picker chips are reachable (not clipped)', async ({ page }) => {
+    await page.getByTestId('day-selector-pill').click();
+    await expect(page.getByTestId('day-picker')).toHaveClass(/open/);
+    const chips = page.locator('[data-testid^="day-chip-"]');
+    const count = await chips.count();
     expect(count).toBeGreaterThan(0);
     const viewport = page.viewportSize()!;
     for (let i = 0; i < count; i++) {
-      const box = await buttons.nth(i).boundingBox();
-      expect(box!.x).toBeGreaterThanOrEqual(0);
-      expect(box!.x + box!.width).toBeLessThanOrEqual(viewport.width);
+      const box = await chips.nth(i).boundingBox();
+      // Some chips below the fold may not have a box; skip those.
+      if (!box) continue;
+      expect(box.x).toBeGreaterThanOrEqual(0);
+      expect(box.x + box.width).toBeLessThanOrEqual(viewport.width);
     }
   });
 

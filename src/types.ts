@@ -34,3 +34,24 @@ export interface Guess {
   /** Selected track ids for this guess; used to dedup duplicate submissions after a reload. */
   ids: number[];
 }
+
+export type DayStatus =
+  | 'today'
+  | 'done'
+  | 'doneMistakes'
+  | 'inProgress'
+  | 'failed'
+  | 'unplayed'
+  | 'locked';
+
+export interface DayState {
+  day: number;
+  date: string;
+  /** ISO timestamp at which a locked day will release. Absent for already-
+   *  released days. The picker shows this as a tooltip on locked chips. */
+  releaseAt?: string;
+  status: DayStatus;
+  mistakes: number;
+  groupsSolved: number;
+  isToday: boolean;
+}

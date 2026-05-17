@@ -36,8 +36,21 @@ export async function selectIds(page: Page, ids: number[]): Promise<void> {
 /** Switch to a specific day so tests are independent of the host clock. */
 export async function gotoDay(page: Page, day: number): Promise<void> {
   await page.goto(APP_URL);
-  await page.getByTestId(`day-btn-${day}`).click();
+  await openPicker(page);
+  await page.getByTestId(`day-chip-${day}`).click();
   await expect(page.getByTestId('puzzle-heading')).toHaveText(`Audio Connections ${day}`);
   await expect(page.getByTestId('grid')).toBeVisible();
   await expect(page.locator('.tile')).toHaveCount(16);
+}
+
+/** Open the day picker popover and wait for it to be interactable. */
+export async function openPicker(page: Page): Promise<void> {
+  await page.getByTestId('day-selector-pill').click();
+  await expect(page.getByTestId('day-picker')).toHaveClass(/open/);
+}
+
+/** Close the day picker (Esc) and wait for it to be hidden. */
+export async function closePicker(page: Page): Promise<void> {
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('day-picker')).not.toHaveClass(/open/);
 }
