@@ -393,3 +393,82 @@ test.describe('Audio Connections — persistence & reset', () => {
     await expect(page.getByTestId('submit-btn')).toHaveText('Submit (2/4)');
   });
 });
+
+test.describe('Audio Connections — cold load default day', () => {
+  // The latest released puzzle is the one a returning visitor *might* be
+  // redirected to. Compute it at test time so the suite tracks the puzzle
+  // calendar without having to edit constants.
+  const latest = (() => {
+    const now = Date.now();
+    for (let i = puzzles.length - 1; i >= 0; i--) {
+      const p = puzzles[i]!;
+      if (!p.releaseAt || new Date(p.releaseAt).getTime() <= now) return p;
+    }
+    return puzzles[0]!;
+  })();
+
+  /** Build a minimal valid PersistedGameState. Only the fields the cold-load
+   *  heuristic reads (solvedThemes.length, mistakes) need realistic values. */
+  function persistedState(opts: { day: number; solvedThemes: number[]; mistakes: number; gameOver: boolean }) {
+    return {
+      __v: 1,
+      day: opts.day,
+      selected: [],
+      solvedThemes: opts.solvedThemes,
+      notes: [],
+      mistakes: opts.mistakes,
+      guessHistory: [],
+      gameOver: opts.gameOver,
+      trackOrder: [],
+      guessSignatures: [],
+    };
+  }
+
+  async function seedStorage(page: Page, entries: Record<string, unknown>) {
+    await page.addInitScript((data) => {
+      for (const [k, v] of Object.entries(data)) {
+        localStorage.setItem(k, JSON.stringify(v));
+      }
+    }, entries);
+  }
+
+  /** Like seedStorage but writes the currentDay key as a raw number string. */
+  async function seedCurrentDay(page: Page, day: number) {
+    await page.addInitScript((d) => {
+      localStorage.setItem('audio-connections:currentDay', String(d));
+    }, day);
+  }
+
+  test('first-time visitor lands on the latest puzzle', async ({ page }) => {
+    await page.goto(APP_URL);
+    await expect(page.getByTestId('puzzle-heading')).toHaveText(`Audio Connections ${latest.day}`);
+  });
+
+  test('returning visitor with a solved saved day jumps to fresh latest', async ({ page }) => {
+    await seedCurrentDay(page, 1);
+    await seedStorage(page, {
+      'audio-connections:day:1': persistedState({ day: 1, solvedThemes: [0, 1, 2, 3], mistakes: 0, gameOver: true }),
+    });
+    await page.goto(APP_URL);
+    await expect(page.getByTestId('puzzle-heading')).toHaveText(`Audio Connections ${latest.day}`);
+  });
+
+  test('returning visitor mid-play on saved day stays on it', async ({ page }) => {
+    await seedCurrentDay(page, 1);
+    await seedStorage(page, {
+      'audio-connections:day:1': persistedState({ day: 1, solvedThemes: [0], mistakes: 1, gameOver: false }),
+    });
+    await page.goto(APP_URL);
+    await expect(page.getByTestId('puzzle-heading')).toHaveText('Audio Connections 1');
+  });
+
+  test('returning visitor with terminal saved day stays put when the latest is already touched', async ({ page }) => {
+    await seedCurrentDay(page, 1);
+    await seedStorage(page, {
+      'audio-connections:day:1': persistedState({ day: 1, solvedThemes: [0, 1, 2, 3], mistakes: 0, gameOver: true }),
+      [`audio-connections:day:${latest.day}`]: persistedState({ day: latest.day, solvedThemes: [0], mistakes: 0, gameOver: false }),
+    });
+    await page.goto(APP_URL);
+    await expect(page.getByTestId('puzzle-heading')).toHaveText('Audio Connections 1');
+  });
+});
