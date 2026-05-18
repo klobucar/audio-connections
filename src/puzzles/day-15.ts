@@ -16,12 +16,12 @@ const puzzle: Puzzle = {
       ],
     },
     {
-      theme: 'City in the title',
+      theme: 'Musicians who have hosted SNL',
       tracks: [
-        { id: 217635876, artist: 'Elvis Presley', title: 'Viva Las Vegas' },
-        { id: 300207270, artist: 'Randy Newman', title: 'I Love L.A.' },
-        { id: 712606043, artist: 'Tony Bennett', title: 'I Left My Heart in San Francisco' },
-        { id: 259204195, artist: 'Glenn Miller', title: "(I've Got a Gal In) Kalamazoo" },
+        { id: 380625785, artist: 'Paul Simon', title: 'You Can Call Me Al' },
+        { id: 400946435, artist: 'Justin Timberlake', title: 'SexyBack' },
+        { id: 251948354, artist: 'Britney Spears', title: 'Toxic' },
+        { id: 1560735480, artist: 'Olivia Rodrigo', title: 'drivers license' },
       ],
     },
     {
