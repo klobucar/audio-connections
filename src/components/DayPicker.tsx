@@ -39,6 +39,19 @@ function sortDays(days: DayState[], mode: SortMode): DayState[] {
   return [...days].sort((a, b) => b.day - a.day);
 }
 
+/** Hide locked days beyond the first one. Players see "the next puzzle is
+ *  coming" without the full release roadmap leaking out. Relies on `days`
+ *  being in ascending day order so the kept locked entry is the soonest. */
+function hideFutureLocked(days: DayState[]): DayState[] {
+  let kept = false;
+  return days.filter((d) => {
+    if (d.status !== 'locked') return true;
+    if (kept) return false;
+    kept = true;
+    return true;
+  });
+}
+
 const GRID_COLS = 7;
 
 export function DayPicker({ days, open, onClose, onSelect }: DayPickerProps) {
@@ -98,7 +111,7 @@ export function DayPicker({ days, open, onClose, onSelect }: DayPickerProps) {
     return { total, solved, failed, inProg };
   }, [days]);
 
-  const sortedDays = useMemo(() => sortDays(days, sort), [days, sort]);
+  const sortedDays = useMemo(() => sortDays(hideFutureLocked(days), sort), [days, sort]);
 
   function handlePick(day: number, status: DayStatus) {
     if (status === 'locked') return;

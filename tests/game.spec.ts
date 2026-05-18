@@ -505,3 +505,37 @@ test.describe('Audio Connections — cold load default day', () => {
     await expect(page.getByTestId('puzzle-heading')).toHaveText('Audio Connections 1');
   });
 });
+
+test.describe('Audio Connections — picker hides future locked days', () => {
+  // Pull the soonest locked day at test time so the suite tracks the puzzle
+  // calendar without baked-in day numbers.
+  const futureLocked = (() => {
+    const now = Date.now();
+    return puzzles
+      .filter((p) => p.releaseAt && new Date(p.releaseAt).getTime() > now)
+      .sort((a, b) => a.day - b.day);
+  })();
+
+  test('exactly one locked chip is rendered, and it is the soonest one', async ({ page }) => {
+    test.skip(futureLocked.length === 0, 'no locked puzzles in the current calendar');
+    await page.goto(APP_URL);
+    await page.getByTestId('day-selector-pill').click();
+    await expect(page.getByTestId('day-picker')).toHaveClass(/open/);
+
+    await expect(page.locator('.day-picker-grid .day-chip-locked')).toHaveCount(1);
+    const soonest = futureLocked[0]!;
+    await expect(page.getByTestId(`day-chip-${soonest.day}`)).toBeVisible();
+  });
+
+  test('further-out locked days are absent from the grid', async ({ page }) => {
+    test.skip(futureLocked.length < 2, 'need at least 2 future-locked days to verify');
+    await page.goto(APP_URL);
+    await page.getByTestId('day-selector-pill').click();
+    await expect(page.getByTestId('day-picker')).toHaveClass(/open/);
+
+    for (let i = 1; i < futureLocked.length; i++) {
+      const hidden = futureLocked[i]!;
+      await expect(page.getByTestId(`day-chip-${hidden.day}`)).toHaveCount(0);
+    }
+  });
+});
