@@ -20,8 +20,8 @@ const puzzle: Puzzle = {
       tracks: [
         { id: 1544173942, artist: 'Prince', title: '1999', note: 'Super Bowl XLI (2007)' },
         { id: 1161504024, artist: 'Bruno Mars', title: '24K Magic', note: 'Super Bowl XLVIII (2014)' },
-        { id: 1488408568, artist: 'The Weeknd', title: 'Blinding Lights', note: 'Super Bowl LV (2021)' },
-        { id: 1441154437, artist: 'Rihanna', title: 'Umbrella', note: 'Super Bowl LVII (2023)' },
+        { id: 1781353929, artist: 'Kendrick Lamar', title: 'Not Like Us', note: 'Super Bowl LIX (2025)' },
+        { id: 1622045635, artist: 'Bad Bunny', title: 'Tití Me Preguntó', note: 'Super Bowl LX (2026)' },
       ],
     },
     {
