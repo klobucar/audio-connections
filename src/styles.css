@@ -135,8 +135,11 @@ body {
     background-repeat: no-repeat;
   }
   /* Restore the ruled lines only on iOS, where they render cleanly.
-     `-webkit-touch-callout` is an iOS-WebKit-only property. */
-  @supports (-webkit-touch-callout: none) {
+     `-webkit-touch-callout` reads true on iOS Safari, but Firefox also
+     ships it via its -webkit- web-compat shim, so it leaks the broken
+     lines onto Firefox Android. Exclude Firefox with -moz-osx-font-
+     smoothing (a genuinely Firefox-only property) so only iOS matches. */
+  @supports (-webkit-touch-callout: none) and (not (-moz-osx-font-smoothing: auto)) {
     .tile-label {
       background:
         repeating-linear-gradient(0deg,
