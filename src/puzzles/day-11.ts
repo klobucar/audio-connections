@@ -36,7 +36,7 @@ const puzzle: Puzzle = {
     {
       theme: 'Bassist is the lead singer',
       tracks: [
-        { id: 1197789431, artist: 'Thundercat', title: 'Them Changes', note: 'Thundercat — bass & lead vocals' },
+        { id: 1197789377, artist: 'Thundercat', title: "A Fan's Mail (Tron Song Suite II)", note: 'Thundercat — bass & lead vocals' },
         { id: 1440744163, artist: 'The Police', title: 'Message in a Bottle', note: 'Sting — bass & lead vocals' },
         { id: 1440943745, artist: 'Wings', title: 'Silly Love Songs', note: 'McCartney — bass & lead vocals' },
         { id: 1439443121, artist: 'Motörhead', title: 'Ace of Spades', note: 'Lemmy — bass & lead vocals' },
