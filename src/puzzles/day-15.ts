@@ -16,12 +16,12 @@ const puzzle: Puzzle = {
       ],
     },
     {
-      theme: 'Musicians who have hosted SNL',
+      theme: 'Fire in the title',
       tracks: [
-        { id: 380625785, artist: 'Paul Simon', title: 'You Can Call Me Al' },
-        { id: 400946435, artist: 'Justin Timberlake', title: 'SexyBack' },
-        { id: 251948354, artist: 'Britney Spears', title: 'Toxic' },
-        { id: 1560735480, artist: 'Olivia Rodrigo', title: 'drivers license' },
+        { id: 1192962303, artist: 'The Doors', title: 'Light My Fire' },
+        { id: 251002253, artist: 'Johnny Cash', title: 'Ring of Fire' },
+        { id: 158816462, artist: 'Billy Joel', title: "We Didn't Start the Fire" },
+        { id: 1741021428, artist: 'The Prodigy', title: 'Fire' },
       ],
     },
     {
