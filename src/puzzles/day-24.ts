@@ -27,7 +27,7 @@ const puzzle: Puzzle = {
       theme: 'Songs that sample Oh Honey - Delegation',
       tracks: [
         { id: 1444773950, artist: 'Ice Cube', title: "Ain't Got No Haters" },
-        { id: 1752591731, artist: 'Kali Uchis', title: 'Never Be Yours' },
+        { id: 1752591733, artist: 'Kali Uchis', title: 'Never Be Yours' },
         { id: 1464818052, artist: 'Your Old Droog', title: 'Train Love' },
         { id: 1440791850, artist: 'Dizzee Rascal', title: 'Chillin Wiv Da Mandem' },
       ],
