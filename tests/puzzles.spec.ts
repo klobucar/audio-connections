@@ -9,7 +9,7 @@ const puzzleDir = join(here, '..', 'src', 'puzzles');
 
 test.describe('puzzle calendar', () => {
   test('every file in src/puzzles/ matches the day-N.ts naming convention', () => {
-    const files = readdirSync(puzzleDir);
+    const files = readdirSync(puzzleDir).filter((f) => f !== 'template.ts');
     for (const f of files) {
       expect(f, `unexpected file in src/puzzles/: ${f}`).toMatch(/^day-\d+\.ts$/);
     }
