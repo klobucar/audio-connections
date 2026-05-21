@@ -25,12 +25,12 @@ const puzzle: Puzzle = {
       ],
     },
     {
-      theme: '80s one-hit wonders',
+      theme: 'Hosted and performed on SNL',
       tracks: [
-        { id: 398483947, artist: 'Falco', title: 'Rock Me Amadeus' },
-        { id: 40633228, artist: 'Peter Schilling', title: 'Major Tom (Coming Home)' },
-        { id: 1443124564, artist: 'Corey Hart', title: 'Sunglasses at Night' },
-        { id: 1589119250, artist: 'Rockwell', title: "Somebody's Watching Me" },
+        { id: 380625785, artist: 'Paul Simon', title: 'You Can Call Me Al' },
+        { id: 252606592, artist: 'Justin Timberlake', title: 'Cry Me a River' },
+        { id: 251948354, artist: 'Britney Spears', title: 'Toxic' },
+        { id: 1560735480, artist: 'Olivia Rodrigo', title: 'drivers license' },
       ],
     },
     {
