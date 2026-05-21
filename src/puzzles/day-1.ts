@@ -4,6 +4,7 @@ const puzzle: Puzzle = {
   day: 1,
   date: '2026-05-10',
   author: 'Corey Farwell',
+  releaseAt: '2026-05-10T00:00:00Z',
   themes: [
     {
       theme: 'Heaven in the title',

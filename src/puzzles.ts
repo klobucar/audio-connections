@@ -94,7 +94,10 @@ export interface IsReleasedOpts {
 
 export function isReleased(p: Puzzle, opts: IsReleasedOpts = {}): boolean {
   if (opts.unlocked?.has(p.day)) return true;
-  if (!p.releaseAt) return true;
+  // A puzzle with no releaseAt is treated as unreleased (hidden), not shown —
+  // fail-safe so a misconfigured day can't leak before its date. Every
+  // shipped puzzle should carry a releaseAt; the puzzles test enforces it.
+  if (!p.releaseAt) return false;
   return (opts.now ?? Date.now()) >= new Date(p.releaseAt).getTime();
 }
 

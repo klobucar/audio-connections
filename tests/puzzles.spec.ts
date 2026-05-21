@@ -33,4 +33,22 @@ test.describe('puzzle calendar', () => {
       expect(found, `${f}: no puzzle with day=${expected} was loaded`).toBeDefined();
     }
   });
+
+  // releaseAt is optional in the type, but every shipped puzzle must carry one:
+  // isReleased() now hides any puzzle missing it, so a forgotten releaseAt
+  // would silently make a day unreachable. This test catches that at CI time.
+  test('every puzzle has a valid releaseAt timestamp', () => {
+    for (const p of puzzles) {
+      expect(typeof p.releaseAt, `day ${p.day}: releaseAt is missing`).toBe('string');
+      const ms = new Date(p.releaseAt!).getTime();
+      expect(
+        Number.isNaN(ms),
+        `day ${p.day}: releaseAt "${p.releaseAt}" is not a parseable date`,
+      ).toBe(false);
+      expect(
+        p.releaseAt!.startsWith(p.date),
+        `day ${p.day}: releaseAt "${p.releaseAt}" does not match date "${p.date}"`,
+      ).toBe(true);
+    }
+  });
 });

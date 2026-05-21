@@ -4,6 +4,7 @@ const puzzle: Puzzle = {
   day: 24,
   date: '2026-06-02',
   author: 'Frankie Arana',
+  releaseAt: '2026-06-02T00:00:00Z',
   themes: [
     {
       theme: "Songs about Workin'",
