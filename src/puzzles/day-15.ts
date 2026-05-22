@@ -7,30 +7,30 @@ const puzzle: Puzzle = {
   releaseAt: '2026-05-24T00:00:00Z',
   themes: [
     {
-      theme: 'Tarot card in the title',
-      tracks: [
-        { id: 1391327247, artist: 'Smash Mouth', title: "Walkin' on the Sun", note: 'The Sun' },
-        { id: 1440858129, artist: 'Frank Sinatra', title: 'Fly Me to the Moon', note: 'The Moon' },
-        { id: 1500643398, artist: 'The Rolling Stones', title: 'Sympathy for the Devil', note: 'The Devil' },
-        { id: 1441163498, artist: 'The Beatles', title: 'The Fool on the Hill', note: 'The Fool' },
-      ],
-    },
-    {
       theme: 'Number in the title',
       tracks: [
         { id: 1446013598, artist: 'Nena', title: '99 Luftballons' },
         { id: 273166378, artist: 'Dolly Parton', title: '9 to 5' },
         { id: 1322068804, artist: 'Lou Bega', title: 'Mambo No. 5' },
-        { id: 1450334168, artist: 'Ariana Grande', title: '7 rings' },
+        { id: 268543715, artist: 'Tommy Tutone', title: '867-5309/Jenny' },
       ],
     },
     {
-      theme: 'Famous saxophone solo',
+      theme: 'Songs with a prominent saxophone',
       tracks: [
         { id: 693606496, artist: 'Gerry Rafferty', title: 'Baker Street' },
         { id: 193085066, artist: 'George Michael', title: 'Careless Whisper' },
         { id: 1531037503, artist: 'John Coltrane', title: 'Giant Steps' },
         { id: 1045058681, artist: 'Bruce Springsteen', title: 'Born to Run' },
+      ],
+    },
+    {
+      theme: 'Tarot card in the title',
+      tracks: [
+        { id: 1391327247, artist: 'Smash Mouth', title: "Walkin' on the Sun", note: 'The Sun' },
+        { id: 1440952840, artist: 'Creedence Clearwater Revival', title: 'Bad Moon Rising', note: 'The Moon' },
+        { id: 1500643398, artist: 'The Rolling Stones', title: 'Sympathy for the Devil', note: 'The Devil' },
+        { id: 1441163498, artist: 'The Beatles', title: 'The Fool on the Hill', note: 'The Fool' },
       ],
     },
     {
