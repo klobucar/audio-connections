@@ -2,7 +2,7 @@ import type { DayState, DayStatus, Puzzle } from './types';
 import { loadState } from './storage';
 import { MAX_MISTAKES, isReleased } from './puzzles';
 
-function deriveStatus(
+export function deriveStatus(
   released: boolean,
   isTodayDay: boolean,
   groupsSolved: number,

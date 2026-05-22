@@ -79,7 +79,7 @@ export interface SessionState {
   gameOver: boolean;
 }
 
-function initialSession(themeCount: number, loadStatus: string): SessionState {
+export function initialSession(themeCount: number, loadStatus: string): SessionState {
   return {
     day: null,
     loadStatus,
@@ -94,7 +94,7 @@ function initialSession(themeCount: number, loadStatus: string): SessionState {
   };
 }
 
-type Action =
+export type Action =
   | { type: 'load-reset'; themeCount: number; loadStatus: string }
   | { type: 'load-status'; status: string }
   | { type: 'load-fresh'; day: number; themeCount: number; tracks: LoadedTrack[]; loadStatus: string }
@@ -115,7 +115,7 @@ function addSig(prev: ReadonlySet<string>, ids: number[]): Set<string> {
   return next;
 }
 
-function reducer(state: SessionState, action: Action): SessionState {
+export function reducer(state: SessionState, action: Action): SessionState {
   switch (action.type) {
     case 'load-reset':
       return initialSession(action.themeCount, action.loadStatus);
