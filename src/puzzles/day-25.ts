@@ -10,9 +10,9 @@ const puzzle: Puzzle = {
       theme: 'Anime theme songs',
       tracks: [
         { id: 1521453384, artist: 'The Seatbelts', title: 'Tank!', note: 'Cowboy Bebop' },
-        { id: 1721842999, artist: 'Nujabes feat. Shing02', title: 'Battlecry', note: 'Samurai Champloo' },
+        { id: 1540549381, artist: 'Yoko Takahashi', title: "A Cruel Angel's Thesis", note: 'Neon Genesis Evangelion' },
         { id: 1613377502, artist: 'Rui Nagai', title: 'Big-O!', note: 'The Big O' },
-        { id: 1317448793, artist: 'Jason Paige', title: 'Pokémon Theme', note: 'Pokémon' },
+        { id: 1689408288, artist: 'DALI', title: 'Moonlight Legend', note: 'Sailor Moon' },
       ],
     },
     {
