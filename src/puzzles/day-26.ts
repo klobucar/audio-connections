@@ -16,12 +16,12 @@ const puzzle: Puzzle = {
       ],
     },
     {
-      theme: 'Charity singles',
+      theme: "Onomatopoeia in the title — Holy '66, Batman!",
       tracks: [
-        { id: 41737859, artist: 'U.S.A. for Africa', title: 'We Are the World' },
-        { id: 1609249447, artist: 'Band Aid', title: "Do They Know It's Christmas?" },
-        { id: 304830966, artist: 'Dionne Warwick & Friends', title: "That's What Friends Are For" },
-        { id: 1440916882, artist: 'Elton John', title: 'Candle in the Wind 1997' },
+        { id: 30394505, artist: 'Bobby Darin', title: 'Splish Splash' },
+        { id: 1735534479, artist: 'Nancy Sinatra', title: 'Bang Bang (My Baby Shot Me Down)' },
+        { id: 1443060256, artist: 'Black Eyed Peas', title: 'Boom Boom Pow' },
+        { id: 1603515814, artist: 'Charli XCX', title: 'Boom Clap' },
       ],
     },
     {
