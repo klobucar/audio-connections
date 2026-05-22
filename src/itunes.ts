@@ -37,6 +37,11 @@ function jsonpLookup(itunesId: number, timeoutMs = 10_000): Promise<ITunesLookup
   });
 }
 
+/** Exponential backoff (capped at 10s) before the Nth retry of a lookup. */
+export function backoffDelayMs(attempt: number): number {
+  return Math.min(500 * 2 ** (attempt - 1), 10_000);
+}
+
 export async function fetchPreviewUrl(itunesId: number, attempt = 1): Promise<string | null> {
   const MAX_ATTEMPTS = 6;
   try {
@@ -48,8 +53,7 @@ export async function fetchPreviewUrl(itunesId: number, attempt = 1): Promise<st
     return result.previewUrl;
   } catch (e) {
     if (attempt < MAX_ATTEMPTS) {
-      const delay = Math.min(500 * Math.pow(2, attempt - 1), 10_000);
-      await sleep(delay);
+      await sleep(backoffDelayMs(attempt));
       return fetchPreviewUrl(itunesId, attempt + 1);
     }
     console.warn(`Failed to fetch ID ${itunesId} after ${attempt} attempts:`, e);

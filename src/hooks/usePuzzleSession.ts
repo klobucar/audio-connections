@@ -9,7 +9,7 @@ import { EXIT_ANIM_MS, MATCH_PULSE_MS } from '../timings';
 /** Silent 1-frame WAV used as a placeholder when running with ?mock=1. */
 const SILENT_WAV = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
 
-function shuffle<T>(arr: T[]): T[] {
+export function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -31,6 +31,49 @@ function setEqual(a: ReadonlyArray<number>, b: ReadonlyArray<number>): boolean {
 
 function signature(ids: number[]): string {
   return [...ids].sort((a, b) => a - b).join(',');
+}
+
+export interface GuessClassification {
+  /** Sorted-comma-joined ids — the dedup key for this guess. */
+  signature: string;
+  /** True when this exact id set was already submitted this session. */
+  duplicate: boolean;
+  /** themeIdx for each id, in `ids` order; -1 for an id with no loaded track. */
+  themesPicked: number[];
+  /** Largest number of picked ids sharing a single theme (0 for an empty pick). */
+  maxCount: number;
+  /** All four picks share one theme. */
+  correct: boolean;
+  /** Exactly three of four picks share one theme. */
+  oneAway: boolean;
+  /** The solved theme's index when `correct`; -1 otherwise. */
+  themeIdx: number;
+}
+
+/** Pure verdict for a submitted guess: duplicate?, right/wrong, one-away, and
+ *  the theme it solved. `submit()` turns this into dispatches + status toasts;
+ *  keeping the decision separate makes it testable without the animation
+ *  timers and React callbacks wrapped around it. */
+export function classifyGuess(
+  ids: number[],
+  tracks: ReadonlyArray<LoadedTrack>,
+  priorSignatures: ReadonlySet<string>,
+): GuessClassification {
+  const sig = signature(ids);
+  const themesPicked = ids.map((id) => tracks.find((t) => t.id === id)?.themeIdx ?? -1);
+  const counts = new Map<number, number>();
+  for (const t of themesPicked) counts.set(t, (counts.get(t) ?? 0) + 1);
+  const maxCount = counts.size ? Math.max(...counts.values()) : 0;
+  const correct = maxCount === 4;
+  return {
+    signature: sig,
+    duplicate: priorSignatures.has(sig),
+    themesPicked,
+    maxCount,
+    correct,
+    oneAway: maxCount === 3,
+    themeIdx: correct ? themesPicked[0]! : -1,
+  };
 }
 
 /* ─── Per-puzzle session state ──────────────────────────────────────────────
@@ -473,23 +516,15 @@ export function usePuzzleSession(puzzle: Puzzle, options: UsePuzzleSessionOption
     if (state.gameOver) return;
     if (state.selected.size !== 4) return;
     const ids = [...state.selected];
-    const sig = signature(ids);
-    if (state.guessSignatures.has(sig)) {
+    const verdict = classifyGuess(ids, state.tracks, state.guessSignatures);
+    if (verdict.duplicate) {
       onStatus('Already guessed!');
       return;
     }
+    const { themesPicked } = verdict;
 
-    const themesPicked = ids.map((id) => {
-      const trk = state.tracks.find((t) => t.id === id);
-      return trk?.themeIdx ?? -1;
-    });
-    const counts = new Map<number, number>();
-    for (const t of themesPicked) counts.set(t, (counts.get(t) ?? 0) + 1);
-    const maxCount = Math.max(...counts.values());
-    const correct = maxCount === 4;
-
-    if (correct) {
-      const themeIdx = themesPicked[0]!;
+    if (verdict.correct) {
+      const themeIdx = verdict.themeIdx;
       const remainingUnsolved = state.themeStates.filter((s) => s !== 'exiting' && s !== 'solved').length;
       const willWin = remainingUnsolved === 1;
       onStopAudio();
@@ -505,7 +540,7 @@ export function usePuzzleSession(puzzle: Puzzle, options: UsePuzzleSessionOption
       if (nextMistakes >= MAX_MISTAKES) {
         onStatus('Out of mistakes.');
         setTimeout(() => dispatch({ type: 'wrong-game-over-exit-end' }), EXIT_ANIM_MS);
-      } else if (maxCount === 3) {
+      } else if (verdict.oneAway) {
         onStatus('One away…');
       } else {
         onStatus('Not a group. Try again.');

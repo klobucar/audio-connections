@@ -48,3 +48,32 @@ export function deriveDayStates(
 ): DayState[] {
   return puzzles.map((p) => deriveDayState(p, todayDay, unlockedDays));
 }
+
+/** Cold-load decision: which puzzle index a visitor lands on. The impure
+ *  inputs (saved day, release clock, per-day status) are passed in so the
+ *  branching is unit-testable. App wires the real `isReleased`/`deriveDayState`.
+ *
+ *  Rule: prefer the saved day, but jump to the latest released puzzle only
+ *  when the player has nothing to return to — their saved day is finished
+ *  AND the latest is still fresh (untouched). Mid-play saves, or a latest
+ *  that's already been opened, never trigger a surprise switch. */
+export function pickInitialDayIndex(
+  puzzles: Puzzle[],
+  latestIdx: number,
+  savedDay: number | null,
+  released: (p: Puzzle) => boolean,
+  statusOf: (p: Puzzle) => DayStatus,
+): number {
+  if (savedDay === null) return latestIdx;
+  const savedIdx = puzzles.findIndex((p) => p.day === savedDay);
+  if (savedIdx < 0 || !released(puzzles[savedIdx]!)) return latestIdx;
+
+  const savedStatus = statusOf(puzzles[savedIdx]!);
+  const savedTerminal =
+    savedStatus === 'done' || savedStatus === 'doneMistakes' || savedStatus === 'failed';
+  if (!savedTerminal) return savedIdx;
+
+  const latestStatus = statusOf(puzzles[latestIdx]!);
+  const latestFresh = latestStatus === 'today' || latestStatus === 'unplayed';
+  return latestFresh ? latestIdx : savedIdx;
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { initialSession, reducer } from './usePuzzleSession';
+import { classifyGuess, initialSession, reducer, shuffle } from './usePuzzleSession';
 import type { Action, SessionState, ThemeState } from './usePuzzleSession';
 import type { LoadedTrack } from '../types';
 import type { PersistedGameState } from '../storage';
@@ -240,5 +240,69 @@ describe('reset-puzzle', () => {
     expect(s.selected.size).toBe(0);
     expect(s.themeStates.every((t) => t === 'unsolved')).toBe(true);
     expect(s.gameOver).toBe(false);
+  });
+});
+
+// classifyGuess is the pure verdict that submit() builds its dispatches and
+// status toasts on. submit() itself isn't unit-testable (animation timers,
+// React callbacks) — this covers the decision underneath it.
+describe('classifyGuess', () => {
+  const deck = tracks(); // 16 tracks, theme = floor(id / 4)
+
+  it('flags a four-of-a-theme pick as correct and names the theme', () => {
+    const v = classifyGuess([0, 1, 2, 3], deck, new Set());
+    expect(v.correct).toBe(true);
+    expect(v.themeIdx).toBe(0);
+    expect(v.maxCount).toBe(4);
+    expect(v.oneAway).toBe(false);
+    expect(v.duplicate).toBe(false);
+  });
+
+  it('flags a 3+1 pick as one-away, not correct', () => {
+    const v = classifyGuess([0, 1, 2, 4], deck, new Set());
+    expect(v.correct).toBe(false);
+    expect(v.oneAway).toBe(true);
+    expect(v.maxCount).toBe(3);
+    expect(v.themeIdx).toBe(-1);
+  });
+
+  it('treats a 2+2 split as wrong but not one-away', () => {
+    const v = classifyGuess([0, 1, 4, 5], deck, new Set());
+    expect(v.correct).toBe(false);
+    expect(v.oneAway).toBe(false);
+    expect(v.maxCount).toBe(2);
+  });
+
+  it('reports themesPicked in the order the ids were passed', () => {
+    expect(classifyGuess([4, 0, 8, 1], deck, new Set()).themesPicked).toEqual([1, 0, 2, 0]);
+  });
+
+  it('marks an exact-repeat guess as a duplicate, regardless of pick order', () => {
+    const first = classifyGuess([3, 1, 2, 0], deck, new Set());
+    expect(first.signature).toBe('0,1,2,3');
+    const repeat = classifyGuess([0, 1, 2, 3], deck, new Set([first.signature]));
+    expect(repeat.duplicate).toBe(true);
+  });
+
+  it('uses themeIdx -1 for an id with no loaded track', () => {
+    const v = classifyGuess([0, 1, 2, 999], deck, new Set());
+    expect(v.themesPicked).toEqual([0, 0, 0, -1]);
+    expect(v.correct).toBe(false);
+  });
+});
+
+describe('shuffle', () => {
+  it('returns a permutation — same elements, same length', () => {
+    const input = [1, 2, 3, 4, 5, 6, 7, 8];
+    const out = shuffle(input);
+    expect(out).toHaveLength(input.length);
+    expect([...out].sort((a, b) => a - b)).toEqual(input);
+  });
+
+  it('does not mutate the input array', () => {
+    const input = [1, 2, 3, 4, 5];
+    const copy = [...input];
+    shuffle(input);
+    expect(input).toEqual(copy);
   });
 });
