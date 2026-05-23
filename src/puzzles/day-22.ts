@@ -10,9 +10,9 @@ const puzzle: Puzzle = {
       theme: 'Instructional Dance Songs',
       tracks: [
         { id: 495004214, artist: 'Freak Nasty', title: 'Da Dip' },
-        { id: 1444414896, artist: 'Soulja Boy', title: 'Crank That (Soulja Boy)' },
+        { id: 1443190324, artist: 'Soulja Boy', title: 'Crank That (Soulja Boy)' },
         { id: 545479296, artist: 'Cali Swag District', title: 'Teach Me How to Dougie' },
-        { id: 421220086, artist: 'The Rej3ctz', title: "Cat Daddy" },
+        { id: 421687906, artist: 'The Rej3ctz', title: "Cat Daddy" },
       ],
     },
     {
@@ -20,7 +20,7 @@ const puzzle: Puzzle = {
       tracks: [
         { id: 1441164721, artist: 'The Beatles', title: "Sgt. Pepper's Lonely Hearts Club Band" },
         { id: 1442892190, artist: 'Big Boi', title: "General Patton" },
-        { id: 1273258906, artist: 'Peter Schilling', title: 'Major Tom' },
+        { id: 1100688215, artist: 'Peter Schilling', title: 'Major Tom' },
         { id: 1501739783, artist: 'Megan Thee Stallion', title: 'Captain Hook' },
       ],
     },
@@ -30,7 +30,7 @@ const puzzle: Puzzle = {
         { id: 298451835, artist: 'Jamie Foxx', title: 'Blame It' },
         { id: 1443201578, artist: 'Lindsay Lohan', title: 'Rumors' },
         { id: 349975966, artist: 'Eddie Murphy', title: 'Party All the Time' },
-        { id: 1532111504, artist: 'Vin Diesel', title: 'Feel Like I Do' },
+        { id: 1532111506, artist: 'Vin Diesel', title: 'Feel Like I Do' },
       ],
     },
     {
