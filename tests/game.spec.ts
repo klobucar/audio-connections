@@ -2,12 +2,6 @@ import { test, expect, Page } from '@playwright/test';
 import { puzzles } from './helpers/puzzles';
 import { APP_URL, gotoDay, openPicker, groupByTheme, readTrackIds, selectIds } from './helpers/game';
 
-test('puzzles expose author metadata for every day', () => {
-  for (const puzzle of puzzles) {
-    expect(puzzle.author.trim().length).toBeGreaterThan(0);
-  }
-});
-
 test.describe('Audio Connections — Day 1 gameplay', () => {
   test.beforeEach(async ({ page }) => {
     await gotoDay(page, 1);

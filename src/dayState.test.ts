@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { deriveDayState, deriveStatus } from './dayState';
+import { deriveDayState, deriveStatus, pickInitialDayIndex } from './dayState';
 import { saveState } from './storage';
-import type { Puzzle } from './types';
+import type { DayStatus, Puzzle } from './types';
 
 describe('deriveStatus', () => {
   it('is locked whenever the puzzle has not released, whatever the progress', () => {
@@ -73,5 +73,45 @@ describe('deriveDayState', () => {
   it('marks an unreleased puzzle locked and never reads its save', () => {
     const future: Puzzle = { ...released, day: 4, releaseAt: '2099-01-01T00:00:00Z' };
     expect(deriveDayState(future, 4, new Set()).status).toBe('locked');
+  });
+});
+
+describe('pickInitialDayIndex', () => {
+  // pickInitialDayIndex only reads `day` and array order off each puzzle.
+  const puzzles: Puzzle[] = [1, 2, 3].map((day) => ({
+    day,
+    date: '2026-01-01',
+    author: 'test',
+    themes: [],
+  }));
+  const latestIdx = 2; // day 3 is the latest released
+  const allReleased = () => true;
+
+  it('lands on the latest puzzle when there is no saved day', () => {
+    expect(pickInitialDayIndex(puzzles, latestIdx, null, allReleased, () => 'today')).toBe(2);
+  });
+
+  it('lands on the latest when the saved day is not in the calendar', () => {
+    expect(pickInitialDayIndex(puzzles, latestIdx, 99, allReleased, () => 'today')).toBe(2);
+  });
+
+  it('lands on the latest when the saved day is no longer released', () => {
+    const released = (p: Puzzle) => p.day !== 1;
+    expect(pickInitialDayIndex(puzzles, latestIdx, 1, released, () => 'unplayed')).toBe(2);
+  });
+
+  it('stays on the saved day while it is still in progress', () => {
+    const statusOf = (p: Puzzle): DayStatus => (p.day === 1 ? 'inProgress' : 'today');
+    expect(pickInitialDayIndex(puzzles, latestIdx, 1, allReleased, statusOf)).toBe(0);
+  });
+
+  it('jumps to the latest when the saved day is finished and the latest is fresh', () => {
+    const statusOf = (p: Puzzle): DayStatus => (p.day === 1 ? 'done' : 'today');
+    expect(pickInitialDayIndex(puzzles, latestIdx, 1, allReleased, statusOf)).toBe(2);
+  });
+
+  it('stays on a finished saved day when the latest has already been touched', () => {
+    const statusOf = (p: Puzzle): DayStatus => (p.day === 1 ? 'failed' : 'inProgress');
+    expect(pickInitialDayIndex(puzzles, latestIdx, 1, allReleased, statusOf)).toBe(0);
   });
 });
