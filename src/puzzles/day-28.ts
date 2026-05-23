@@ -36,10 +36,10 @@ const puzzle: Puzzle = {
     {
       theme: 'Bands that changed names 3 or more times',
       tracks: [
-        { id: 281811771, artist: 'Jefferson Airplane', title: 'White Rabbit' },
-        { id: 590431785, artist: 'Linkin Park', title: 'In the End' },
-        { id: 1440855898, artist: 'Snow Patrol', title: 'Chasing Cars' },
-        { id: 1441133277, artist: 'The Beatles', title: 'Hey Jude' },
+        { id: 281811771, artist: 'Jefferson Airplane', title: 'White Rabbit', note: 'Jefferson Airplane/Jefferson Starship/Starship' },
+        { id: 590431785, artist: 'Linkin Park', title: 'In the End', note: 'Xero/Hybrid Theory/Lincoln Park/Linkin Park' },
+        { id: 1440855898, artist: 'Snow Patrol', title: 'Chasing Cars', note: 'Shrug/Polarbear/Snow Patrol' },
+        { id: 1441133277, artist: 'The Beatles', title: 'Hey Jude', note: 'The Blackjacks/The Quarry Men/Johnny and the Moondogs/The Beatles' },
       ],
     },
   ],
