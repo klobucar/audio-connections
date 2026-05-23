@@ -2,12 +2,10 @@ import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 import type { LoadedTrack, Guess, Puzzle } from '../types';
 import { MAX_MISTAKES } from '../puzzles';
 import { fetchPreviewUrl, fetchPreviewBlobUrl, sleep } from '../itunes';
+import { SILENT_WAV } from '../mock-audio';
 import { loadState, saveState, clearState } from '../storage';
 import type { PersistedGameState } from '../storage';
 import { EXIT_ANIM_MS, MATCH_PULSE_MS } from '../timings';
-
-/** Silent 1-frame WAV used as a placeholder when running with ?mock=1. */
-const SILENT_WAV = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
 
 export function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
