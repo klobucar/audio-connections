@@ -27,7 +27,21 @@ export function useAudio(tracks: LoadedTrack[]): UseAudio {
   // Counts pauses we initiated ourselves (stopAudio, src change while playing).
   // The 'pause' listener decrements this and skips state updates for each one,
   // so only external pauses (OS media keys, etc.) reach the UI sync path.
+  // Each increment carries a short TTL via setTimeout — if the paired 'pause'
+  // event never arrives (browser quirk, aborted play, pause() on an
+  // already-paused element), the suppression decays instead of sitting at
+  // >0 forever and silently eating the next external pause. The window
+  // covers the asynchronous gap between our self-pause action and the
+  // browser's 'pause' dispatch; in practice the event fires in single-digit
+  // ms but we allow generously.
   const suppressPauseRef = useRef(0);
+  const SUPPRESS_TTL_MS = 250;
+  const expectSelfPause = useCallback(() => {
+    suppressPauseRef.current++;
+    setTimeout(() => {
+      if (suppressPauseRef.current > 0) suppressPauseRef.current--;
+    }, SUPPRESS_TTL_MS);
+  }, []);
   // Tracks which track ID is loaded in the element. Survives an OS pause so
   // the 'play' listener can restore the playing state on OS resume. Cleared
   // by stopAudio and 'ended' — intentional stops that should not be resumed.
@@ -78,14 +92,14 @@ export function useAudio(tracks: LoadedTrack[]): UseAudio {
     const audio = audioRef.current;
     if (audio && !audio.paused) {
       // Account for the 'pause' event this will fire so the handler skips it.
-      suppressPauseRef.current++;
+      expectSelfPause();
       audio.pause();
     }
     // Clear so an OS play event after an intentional stop doesn't restore state.
     currentTrackIdRef.current = null;
     setPlayingId(null);
     setPlayProgress(0);
-  }, []);
+  }, [expectSelfPause]);
 
   const togglePlay = useCallback(
     (id: number) => {
@@ -103,7 +117,7 @@ export function useAudio(tracks: LoadedTrack[]): UseAudio {
       if (loadedSrcRef.current !== src) {
         // Changing src on a playing element implicitly pauses it and fires
         // 'pause'. Account for that event so the handler skips it.
-        if (!audio.paused) suppressPauseRef.current++;
+        if (!audio.paused) expectSelfPause();
         audio.src = src;
         loadedSrcRef.current = src;
       } else {
@@ -124,7 +138,7 @@ export function useAudio(tracks: LoadedTrack[]): UseAudio {
         setPlayProgress((cur) => (cur === 0 ? cur : 0));
       });
     },
-    [tracks, playingId, ensureAudio, stopAudio],
+    [tracks, playingId, ensureAudio, stopAudio, expectSelfPause],
   );
 
   useEffect(() => {
