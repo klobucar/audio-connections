@@ -1,7 +1,8 @@
 .playwright-mcp/
 *.png
-# PWA icons are app assets that need to ship with the build.
+# PWA icons + social share card are app assets that need to ship with the build.
 !public/icons/*.png
+!public/og-image.png
 node_modules/
 dist/
 test-results/
