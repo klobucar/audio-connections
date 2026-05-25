@@ -507,6 +507,104 @@ test.describe('Audio Connections — cold load default day', () => {
   });
 });
 
+test.describe('Audio Connections — media key / external pause sync', () => {
+  // Both tests need the Audio stub installed before navigation, so each
+  // sets up addInitScript + navigates manually rather than using beforeEach.
+  async function installStub(page: Parameters<typeof test>[1]['page']) {
+    await page.addInitScript(() => {
+      // Replace the global Audio constructor with a controllable stub.
+      // The real silent-WAV placeholder has 0 duration and fires 'ended' almost
+      // immediately, creating a race between that event and our assertions.
+      // The stub lets us drive play/pause/resume lifecycle precisely.
+      const testAudios: EventTarget[] = [];
+      (window as unknown as Record<string, unknown>)['__testAudios'] = testAudios;
+
+      class StubAudio extends EventTarget {
+        paused = true;
+        ended = false;
+        currentTime = 0;
+        duration = 30;
+        src: string;
+
+        constructor(src?: string) {
+          super();
+          this.src = src ?? '';
+          testAudios.push(this);
+        }
+
+        play() {
+          this.paused = false;
+          // Fire 'play' synchronously — mirrors the browser, which dispatches
+          // the event before handing back the Promise.
+          this.dispatchEvent(new Event('play'));
+          // Never resolves or rejects — keeps the element in a stable
+          // "playing" state so the test can observe it without a race.
+          return new Promise<void>(() => {});
+        }
+
+        pause() {
+          if (!this.paused) {
+            this.paused = true;
+            // Mirrors the browser: calling pause() dispatches the 'pause'
+            // event synchronously on the element.
+            this.dispatchEvent(new Event('pause'));
+          }
+        }
+      }
+
+      (window as unknown as Record<string, unknown>)['Audio'] = StubAudio;
+    });
+  }
+
+  test('hardware media-key pause clears playing state from tile and button', async ({ page }) => {
+    await installStub(page);
+    await gotoDay(page, 1);
+    const themes = groupByTheme(await readTrackIds(page));
+    const playingId = themes.get(0)![0]!;
+    await page.getByTestId(`play-${playingId}`).click();
+    await expect(page.locator(`[data-testid="tile-${playingId}"]`)).toHaveClass(/playing/);
+
+    // Simulate an OS media-key pause: the browser calls audio.pause() directly
+    // on the HTMLAudioElement, firing 'pause' and bypassing React entirely.
+    await page.evaluate(() => {
+      const audios = (window as unknown as Record<string, unknown[]>)['__testAudios'];
+      const last = audios[audios.length - 1] as { pause(): void } | undefined;
+      last?.pause();
+    });
+
+    await expect(page.locator(`[data-testid="tile-${playingId}"]`)).not.toHaveClass(/playing/);
+    await expect(page.locator('.play-btn.playing')).toHaveCount(0);
+  });
+
+  test('hardware media-key resume restores playing state on tile and button', async ({ page }) => {
+    await installStub(page);
+    await gotoDay(page, 1);
+    const themes = groupByTheme(await readTrackIds(page));
+    const playingId = themes.get(0)![0]!;
+    await page.getByTestId(`play-${playingId}`).click();
+    await expect(page.locator(`[data-testid="tile-${playingId}"]`)).toHaveClass(/playing/);
+
+    // OS pause — clears the tile's playing state.
+    await page.evaluate(() => {
+      const audios = (window as unknown as Record<string, unknown[]>)['__testAudios'];
+      const last = audios[audios.length - 1] as { pause(): void } | undefined;
+      last?.pause();
+    });
+    await expect(page.locator(`[data-testid="tile-${playingId}"]`)).not.toHaveClass(/playing/);
+
+    // OS resume — the browser calls audio.play() directly, firing 'play'.
+    // The UI should flip back to the playing state.
+    await page.evaluate(() => {
+      const audios = (window as unknown as Record<string, unknown[]>)['__testAudios'];
+      const last = audios[audios.length - 1] as { play(): void } | undefined;
+      last?.play();
+    });
+
+    await expect(page.locator(`[data-testid="tile-${playingId}"]`)).toHaveClass(/playing/);
+    await expect(page.locator('.play-btn.playing')).toHaveCount(1);
+  });
+});
+
 test.describe('Audio Connections — picker hides future locked days', () => {
   // Pull the soonest locked day at test time so the suite tracks the puzzle
   // calendar without baked-in day numbers.

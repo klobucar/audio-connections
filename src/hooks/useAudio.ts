@@ -24,14 +24,45 @@ export function useAudio(tracks: LoadedTrack[]): UseAudio {
   const [playProgress, setPlayProgress] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const loadedSrcRef = useRef<string | null>(null);
+  // Counts pauses we initiated ourselves (stopAudio, src change while playing).
+  // The 'pause' listener decrements this and skips state updates for each one,
+  // so only external pauses (OS media keys, etc.) reach the UI sync path.
+  const suppressPauseRef = useRef(0);
+  // Tracks which track ID is loaded in the element. Survives an OS pause so
+  // the 'play' listener can restore the playing state on OS resume. Cleared
+  // by stopAudio and 'ended' — intentional stops that should not be resumed.
+  const currentTrackIdRef = useRef<number | null>(null);
 
   const ensureAudio = useCallback((): HTMLAudioElement => {
     let audio = audioRef.current;
     if (audio) return audio;
     audio = new Audio();
     audio.addEventListener('ended', () => {
+      currentTrackIdRef.current = null;
       setPlayingId(null);
       setPlayProgress(0);
+    });
+    // Sync UI when the OS pauses the element externally (e.g. hardware media
+    // keys). The browser calls audio.pause() directly, bypassing React.
+    // suppressPauseRef absorbs each intentional pause we fire ourselves so
+    // only unexpected pauses reach this branch. currentTrackIdRef is NOT
+    // cleared here so the 'play' listener can restore state on OS resume.
+    audio.addEventListener('pause', () => {
+      if (suppressPauseRef.current > 0) {
+        suppressPauseRef.current--;
+        return;
+      }
+      setPlayingId(null);
+      setPlayProgress(0);
+    });
+    // Sync UI when the OS resumes via media key. The browser calls
+    // audio.play() directly; currentTrackIdRef holds the ID of the track
+    // that was playing before the OS pause. Our own audio.play() calls also
+    // fire this event but setPlayingId is idempotent so they are no-ops.
+    audio.addEventListener('play', () => {
+      if (currentTrackIdRef.current !== null) {
+        setPlayingId(currentTrackIdRef.current);
+      }
     });
     audio.addEventListener('timeupdate', () => {
       const a = audioRef.current;
@@ -45,7 +76,13 @@ export function useAudio(tracks: LoadedTrack[]): UseAudio {
 
   const stopAudio = useCallback(() => {
     const audio = audioRef.current;
-    if (audio) audio.pause();
+    if (audio && !audio.paused) {
+      // Account for the 'pause' event this will fire so the handler skips it.
+      suppressPauseRef.current++;
+      audio.pause();
+    }
+    // Clear so an OS play event after an intentional stop doesn't restore state.
+    currentTrackIdRef.current = null;
     setPlayingId(null);
     setPlayProgress(0);
   }, []);
@@ -64,6 +101,9 @@ export function useAudio(tracks: LoadedTrack[]): UseAudio {
 
       const src = track.blobUrl ?? track.previewUrl;
       if (loadedSrcRef.current !== src) {
+        // Changing src on a playing element implicitly pauses it and fires
+        // 'pause'. Account for that event so the handler skips it.
+        if (!audio.paused) suppressPauseRef.current++;
         audio.src = src;
         loadedSrcRef.current = src;
       } else {
@@ -71,6 +111,7 @@ export function useAudio(tracks: LoadedTrack[]): UseAudio {
         // the seek queues until the source is ready.
         audio.currentTime = 0;
       }
+      currentTrackIdRef.current = id;
       setPlayingId(id);
       setPlayProgress(0);
 
