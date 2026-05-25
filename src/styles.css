@@ -1236,6 +1236,48 @@ h1 {
 }
 .copy-btn:hover { background: #2a2218; }
 .copy-btn.copied { background: #2d5a2a; }
+/* ── BrokenDayCard — reuses .end-panel frame; adds broken-specific bits ─ */
+.broken-day-card .end-stamp { color: #8a1d16; }
+.broken-day-card h2 { color: #8a1d16; }
+.broken-body,
+.broken-pickprompt,
+.broken-report-btn {
+  position: relative;
+  z-index: 1;
+}
+.broken-body {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--paper-ink);
+  margin: 8px 0 14px;
+  max-width: 56ch;
+}
+.broken-pickprompt {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--paper-ink-soft);
+  margin: 0 0 16px;
+}
+.broken-report-btn {
+  background: var(--paper-ink);
+  border: none;
+  color: var(--paper);
+  padding: 10px 22px;
+  border-radius: 2px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  display: inline-block;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.broken-report-btn:hover { background: #2a2218; }
 /* ── Reset — toggle switch with confirm flip ─────────────────────────── */
 .reset-row {
   display: flex;

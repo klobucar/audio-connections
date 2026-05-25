@@ -118,6 +118,14 @@ export interface SessionState {
   guessSignatures: Set<string>;
   /** True on win OR loss. `mistakes < MAX_MISTAKES` distinguishes the two. */
   gameOver: boolean;
+  /** True when load finished but one or more track previews failed to
+   *  resolve from iTunes. The puzzle is unplayable in this state — the UI
+   *  shows BrokenDayCard instead of the gameboard. Reset on every load. */
+  broken: boolean;
+  /** iTunes IDs that failed to resolve, in original puzzle order. Used to
+   *  pre-fill the GitHub issue body so maintainers can fix without the
+   *  player having to dig for IDs. */
+  failedTrackIds: number[];
 }
 
 export function initialSession(themeCount: number, loadStatus: string): SessionState {
@@ -132,6 +140,8 @@ export function initialSession(themeCount: number, loadStatus: string): SessionS
     guessHistory: [],
     guessSignatures: new Set(),
     gameOver: false,
+    broken: false,
+    failedTrackIds: [],
   };
 }
 
@@ -140,6 +150,7 @@ export type Action =
   | { type: 'load-status'; status: string }
   | { type: 'load-fresh'; day: number; themeCount: number; tracks: LoadedTrack[]; loadStatus: string }
   | { type: 'load-restore'; day: number; themeCount: number; tracks: LoadedTrack[]; persisted: PersistedGameState; loadStatus: string }
+  | { type: 'load-broken'; day: number; themeCount: number; failedTrackIds: number[] }
   | { type: 'toggle-select'; id: number }
   | { type: 'deselect-all' }
   | { type: 'set-note'; id: number; note: string }
@@ -187,8 +198,18 @@ export function reducer(state: SessionState, action: Action): SessionState {
         guessHistory: action.persisted.guessHistory,
         guessSignatures: new Set(action.persisted.guessSignatures),
         gameOver: action.persisted.gameOver,
+        broken: false,
+        failedTrackIds: [],
       };
     }
+
+    case 'load-broken':
+      return {
+        ...initialSession(action.themeCount, ''),
+        day: action.day,
+        broken: true,
+        failedTrackIds: action.failedTrackIds,
+      };
 
     case 'toggle-select': {
       if (state.gameOver) return state;
@@ -364,6 +385,24 @@ export function usePuzzleSession(puzzle: Puzzle, options: UsePuzzleSessionOption
       }
       if (myGen !== loadGenRef.current) return;
 
+      /* If any preview failed to resolve, the puzzle is unplayable — bail
+       *  before phase 2 (no point prefetching blobs we can't use) and put
+       *  the session into the `broken` state so App renders BrokenDayCard
+       *  instead of the gameboard. The failed iTunes IDs flow through to
+       *  pre-fill the GitHub issue body for one-click reporting. */
+      if (previewUrls.some((u) => u === null)) {
+        const failedTrackIds = previewUrls
+          .map((u, i) => (u === null ? all[i]!.id : null))
+          .filter((id): id is number => id !== null);
+        dispatch({
+          type: 'load-broken',
+          day,
+          themeCount: themes.length,
+          failedTrackIds,
+        });
+        return;
+      }
+
       /* Phase 2: prefetch the .m4a bytes in parallel so playback is a local
        *  blob: read (no CDN hit, network-drop resilient, no MediaSink
        *  recreate-race on Android Firefox). Each blob is ~1MB → ~16MB total
@@ -414,10 +453,9 @@ export function usePuzzleSession(puzzle: Puzzle, options: UsePuzzleSessionOption
         .map((t) => t.blobUrl)
         .filter((u): u is string => !!u);
 
-      const loadStatus =
-        loaded.length < all.length
-          ? `Only got ${loaded.length}/${all.length} previews — some queries failed.`
-          : '';
+      // Once past the broken-state check above, every preview resolved —
+      // load-fresh / load-restore always carries a clean status.
+      const loadStatus = '';
 
       const persisted = loadState(day);
       const loadedIds = loaded.map((t) => t.id);

@@ -19,6 +19,7 @@ import { MobileActionRow } from './components/MobileActionRow';
 import { EndPanel } from './components/EndPanel';
 import { ResetButton } from './components/ResetButton';
 import { IntroOverlay, INTRO_VERSION } from './components/intro/IntroOverlay';
+import { BrokenDayCard } from './components/BrokenDayCard';
 
 const STATUS_TIMEOUT_MS = 10000;
 
@@ -151,7 +152,8 @@ export function App() {
   const heading = `Audio Connections ${puzzle.day}`;
   const dateText = useMemo(() => formatPuzzleDate(puzzle.date), [puzzle.date]);
   const selectedCount = session.state.selected.size;
-  const isLoading = session.state.tracks.length === 0;
+  const isBroken = session.state.broken;
+  const isLoading = session.state.tracks.length === 0 && !isBroken;
   const tilesDisabled = session.state.gameOver || isLoading || session.matchedThemes.size > 0;
 
   // The mobile chrome lives in dedicated regions of the app shell. Chrome
@@ -222,13 +224,15 @@ export function App() {
               onSwitch={onDaySwitch}
             />
             <Countdown puzzles={puzzles} unlockedDays={unlockedDays} onUnlock={onNaturalUnlock} />
-            <SolvedBar
-              themes={puzzle.themes}
-              solvedThemes={session.solvedThemes}
-              tracks={session.state.tracks}
-              guessHistory={session.state.guessHistory}
-              orientation="horizontal"
-            />
+            {!isBroken && (
+              <SolvedBar
+                themes={puzzle.themes}
+                solvedThemes={session.solvedThemes}
+                tracks={session.state.tracks}
+                guessHistory={session.state.guessHistory}
+                orientation="horizontal"
+              />
+            )}
           </div>
         )}
 
@@ -254,8 +258,9 @@ export function App() {
       </header>
 
       {/* LEFT CHROME — landscape only. Vertical SolvedBar. Collapses to 0
-          width when nothing's solved so the grid takes the space. */}
-      {isMobile && orientation === 'landscape' && (
+          width when nothing's solved so the grid takes the space.
+          Suppressed entirely on a broken day (no progress to display). */}
+      {isMobile && orientation === 'landscape' && !isBroken && (
         <aside className="chrome-left">
           {hasSolved && (
             <SolvedBar
@@ -269,43 +274,53 @@ export function App() {
         </aside>
       )}
 
-      {/* MAIN — grid + end panel + (desktop) solved banners. */}
+      {/* MAIN — grid + end panel + (desktop) solved banners. Replaced by
+          BrokenDayCard when the day's previews failed to load (one or more
+          iTunes IDs went stale). */}
       <main className="chrome-main">
-        <SolvedList
-          themes={puzzle.themes}
-          solvedThemes={session.solvedThemes}
-          tracks={session.state.tracks}
-          guessHistory={session.state.guessHistory}
-        />
-        {session.state.gameOver && (
-          <EndPanel
-            won={session.won}
-            day={puzzle.day}
-            guessHistory={session.state.guessHistory}
-            author={puzzle.author}
-            date={dateText}
-          />
+        {isBroken ? (
+          <BrokenDayCard day={puzzle.day} failedTrackIds={session.state.failedTrackIds} />
+        ) : (
+          <>
+            <SolvedList
+              themes={puzzle.themes}
+              solvedThemes={session.solvedThemes}
+              tracks={session.state.tracks}
+              guessHistory={session.state.guessHistory}
+            />
+            {session.state.gameOver && (
+              <EndPanel
+                won={session.won}
+                day={puzzle.day}
+                guessHistory={session.state.guessHistory}
+                author={puzzle.author}
+                date={dateText}
+              />
+            )}
+            <Grid
+              tracks={session.state.tracks}
+              selected={session.state.selected}
+              solvedThemes={session.solvedThemes}
+              exitingThemes={session.exitingThemes}
+              matchedThemes={session.matchedThemes}
+              playingId={audio.playingId}
+              playProgress={audio.playProgress}
+              notes={session.state.notes}
+              disabled={tilesDisabled}
+              tileShape={TILE_SHAPE}
+              onPlay={audio.togglePlay}
+              onSelect={session.toggleSelect}
+              onNoteChange={session.setNote}
+            />
+          </>
         )}
-        <Grid
-          tracks={session.state.tracks}
-          selected={session.state.selected}
-          solvedThemes={session.solvedThemes}
-          exitingThemes={session.exitingThemes}
-          matchedThemes={session.matchedThemes}
-          playingId={audio.playingId}
-          playProgress={audio.playProgress}
-          notes={session.state.notes}
-          disabled={tilesDisabled}
-          tileShape={TILE_SHAPE}
-          onPlay={audio.togglePlay}
-          onSelect={session.toggleSelect}
-          onNoteChange={session.setNote}
-        />
       </main>
 
       {/* RIGHT CHROME — landscape only. Vertical cue tray + mistakes +
-          deselect/submit stacked, with Erase Tape pinned at the bottom. */}
-      {isMobile && orientation === 'landscape' && (
+          deselect/submit stacked, with Erase Tape pinned at the bottom.
+          Hidden on a broken day — none of these controls have meaning
+          without loaded tracks. */}
+      {isMobile && orientation === 'landscape' && !isBroken && (
         <aside className="chrome-right">
           <CueTray
             tracks={session.state.tracks}
@@ -332,9 +347,10 @@ export function App() {
 
       {/* BOTTOM CHROME — desktop controls at ≥ 1024px; portrait-phone cue
           tray + action row at < 1024px portrait. In landscape the side
-          columns carry these, so chrome-bottom is empty. */}
+          columns carry these, so chrome-bottom is empty. Hidden entirely
+          on a broken day (no controls without loaded tracks). */}
       <footer className="chrome-bottom">
-        {!isMobile && (
+        {!isBroken && !isMobile && (
           <div className="chrome-bottom-desktop">
             <MistakesDisplay mistakes={session.state.mistakes} max={MAX_MISTAKES} />
             {statusToast}
@@ -349,7 +365,7 @@ export function App() {
           </div>
         )}
 
-        {isMobile && orientation === 'portrait' && (
+        {!isBroken && isMobile && orientation === 'portrait' && (
           <div className="chrome-bottom-mobile">
             <div className="cue-row">
               <CueTray
