@@ -92,7 +92,12 @@ export function Tile({
       <div className="tile-label-stack">
         <div className="tile-reveal" aria-hidden={!peeled}>
           <div className="tile-reveal-artist">{track.artist}</div>
-          <div className="tile-reveal-title">{track.title}</div>
+          <div
+            className="tile-reveal-title"
+            data-length={track.title.length > 32 ? 'xl' : track.title.length > 22 ? 'lg' : 'md'}
+          >
+            {track.title}
+          </div>
         </div>
 
         <div className="tile-label">

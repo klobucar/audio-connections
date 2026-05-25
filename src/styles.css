@@ -668,6 +668,12 @@ h1 {
   color: rgba(255, 255, 255, 0.92);
   overflow-wrap: anywhere;
 }
+/* Long titles would wrap to an extra row inside .tile-reveal — and because
+   .tile-reveal shares its grid area with .tile-label, that grows the paper
+   label too. Step the font down once the title gets long enough to risk
+   adding a row, so the cassette label stays its standard height. */
+.tile-reveal-title[data-length='lg'] { font-size: 12px; line-height: 1.2; }
+.tile-reveal-title[data-length='xl'] { font-size: 11px; line-height: 1.15; }
 
 .tile-label-stack > .tile-label {
   z-index: 2;
