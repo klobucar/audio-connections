@@ -1,4 +1,6 @@
-import { defineConfig } from 'vite';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import basicSsl from '@vitejs/plugin-basic-ssl';
 import { checkPuzzles } from './vite-plugins/check-puzzles';
@@ -9,10 +11,41 @@ import { checkPuzzles } from './vite-plugins/check-puzzles';
 // self-signed — browsers will warn; tap through.
 const httpsEnabled = process.env.VITE_HTTPS === '1';
 
+// Two GitHub Pages deployments coexist:
+//   - Canonical (audio-connections org) → served at https://connections.audio
+//     via custom domain, so built assets must be served from "/".
+//   - Forks (e.g. klobucar/audio-connections) → served at
+//     <owner>.github.io/<repo>/, so built assets need the repo prefix.
+// We detect which one we're in via the GitHub Actions env vars; everything
+// outside CI stays on "/" for local dev + preview.
+const CANONICAL_OWNER = 'audio-connections';
+const CUSTOM_DOMAIN = 'connections.audio';
+
+function resolveBase(): string {
+  if (!process.env.GITHUB_ACTIONS) return '/';
+  if (process.env.GITHUB_REPOSITORY_OWNER === CANONICAL_OWNER) return '/';
+  const repo = process.env.GITHUB_REPOSITORY?.split('/')[1];
+  return repo ? `/${repo}/` : '/';
+}
+
+// Emit `dist/CNAME` only on the canonical deployment. Keeping the file out
+// of `public/` means forks never ship it — otherwise their Pages site would
+// try to serve at connections.audio and break.
+function emitCname(): Plugin {
+  return {
+    name: 'emit-cname',
+    apply: 'build',
+    closeBundle() {
+      if (process.env.GITHUB_REPOSITORY_OWNER !== CANONICAL_OWNER) return;
+      const outDir = resolve('dist');
+      mkdirSync(outDir, { recursive: true });
+      writeFileSync(resolve(outDir, 'CNAME'), `${CUSTOM_DOMAIN}\n`);
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [react(), checkPuzzles(), ...(httpsEnabled ? [basicSsl()] : [])],
-  // Repo is published at https://frewsxcv.github.io/audio-connections/,
-  // so built asset URLs need that prefix. Local dev keeps '/'.
-  base: process.env.GITHUB_ACTIONS ? '/audio-connections/' : '/',
+  plugins: [react(), checkPuzzles(), emitCname(), ...(httpsEnabled ? [basicSsl()] : [])],
+  base: resolveBase(),
   server: { port: 5173 },
 });
