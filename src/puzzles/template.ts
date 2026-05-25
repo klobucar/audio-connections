@@ -1,3 +1,7 @@
+// New here? See PUZZLE_AUTHORS.md at the repo root for the full guide.
+// Copy this file to src/puzzles/day-NN.ts, fill in the fields, then run
+// `npm run validate` to check your work before opening a PR.
+
 import type { Puzzle } from '../types';
 
 const puzzle: Puzzle = {

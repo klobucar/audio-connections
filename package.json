@@ -12,7 +12,8 @@
     "test": "playwright test",
     "test:unit": "vitest run",
     "test:itunes": "vitest run --config vitest.itunes.config.ts",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "validate": "npm run typecheck && npm run test:unit && npm run test:itunes"
   },
   "dependencies": {
     "react": "^18.3.1",
