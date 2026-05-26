@@ -16,12 +16,12 @@ const puzzle: Puzzle = {
       ],
     },
     {
-      theme: 'Songs with killer Saxophone solos',
+      theme: 'Songs featuring a didgeridoo',
       tracks: [
-        { id: 429945616, artist: 'George Michael', title: 'Careless Whisper' },
-        { id: 1442810074, artist: 'Cary Rae Jepsen', title: 'Run Away with Me' },
-        { id: 693606496, artist: 'Gerry Rafferty', title: 'Baker Street' },
-        { id: 1445883162, artist: 'Gino Vannelli', title: 'I Just Wanna Stop' },
+        { id: 1744404621, artist: 'Aphex Twin', title: 'Flap Head' },
+        { id: 344481734, artist: 'Jamiroquai', title: 'When You Gonna Learn?' },
+        { id: 1675375195, artist: 'Kate Bush', title: 'The Dreaming' },
+        { id: 1056468746, artist: 'Like a Storm', title: 'Love the Way You Hate Me' },
       ],
     },
     {
