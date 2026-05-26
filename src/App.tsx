@@ -20,6 +20,7 @@ import { EndPanel } from './components/EndPanel';
 import { ResetButton } from './components/ResetButton';
 import { IntroOverlay, INTRO_VERSION } from './components/intro/IntroOverlay';
 import { BrokenDayCard } from './components/BrokenDayCard';
+import { SettingsModal } from './components/SettingsModal';
 
 const STATUS_TIMEOUT_MS = 10000;
 
@@ -63,6 +64,7 @@ export function App() {
     saveIntroSeenVersion(INTRO_VERSION);
     setShowIntro(false);
   }, []);
+  const [showSettings, setShowSettings] = useState(false);
   /** Days unlocked at runtime — by Konami (all of them) or by the countdown
    *  ticking past a `releaseAt` (one at a time). Either case adds the day
    *  to this set; nobody reaches into module-level puzzle data anymore. */
@@ -176,9 +178,38 @@ export function App() {
     </div>
   );
 
+  const settingsTrigger = (
+    <button
+      type="button"
+      className="settings-trigger"
+      onClick={() => setShowSettings(true)}
+      data-testid="settings-trigger"
+      aria-label="Settings"
+      title="Settings"
+    >
+      <svg
+        className="settings-trigger-icon"
+        viewBox="0 0 24 24"
+        width="14"
+        height="14"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <path
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinejoin="round"
+          d="M19.43 12.98a7.74 7.74 0 0 0 0-1.96l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.61-.22l-2.49 1a7.5 7.5 0 0 0-1.7-.98l-.38-2.65A.5.5 0 0 0 14 2h-4a.5.5 0 0 0-.49.42l-.38 2.65a7.5 7.5 0 0 0-1.7.98l-2.49-1a.5.5 0 0 0-.61.22l-2 3.46a.5.5 0 0 0 .12.64l2.11 1.65a7.74 7.74 0 0 0 0 1.96L2.45 14.63a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .61.22l2.49-1a7.5 7.5 0 0 0 1.7.98l.38 2.65A.5.5 0 0 0 10 22h4a.5.5 0 0 0 .49-.42l.38-2.65a7.5 7.5 0 0 0 1.7-.98l2.49 1a.5.5 0 0 0 .61-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.12-1.65zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"
+        />
+      </svg>
+    </button>
+  );
+
   return (
     <>
       {showIntro && <IntroOverlay onDismiss={dismissIntro} />}
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
     <div
       className="app-shell"
       data-orientation={orientation}
@@ -188,6 +219,7 @@ export function App() {
           renders the mobile variant. Only the active variant is in the DOM
           (avoids duplicate test IDs and stale chrome). */}
       <header className="chrome-top">
+        {settingsTrigger}
         {!isMobile && (
           <div className="chrome-top-desktop">
             <h1 data-testid="puzzle-heading">{heading}</h1>

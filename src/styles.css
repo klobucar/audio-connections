@@ -2985,3 +2985,327 @@ h1 {
   .intro-skip { top: 8px; right: 12px; }
   .intro-nav { padding-top: 8px; }
 }
+
+/* ─────────────────────────────────────────────────────────────────────
+   SETTINGS — gear trigger tucked into the top-right of the chrome panel,
+   modal that pops over the chassis. Anchoring to chrome-top (rather than
+   the viewport) keeps the icon visually integrated with the panel
+   instead of floating against the screen edge.
+   ───────────────────────────────────────────────────────────────────── */
+/* Chrome-top is the gear's containing block. Mobile already gets a
+   containing block via position:sticky; explicit relative covers desktop
+   too, with no other behavioral change. */
+.chrome-top { position: relative; }
+
+/* Pinned to the top-right of the chrome panel (chrome-top is the
+   containing block via position: sticky on mobile and explicit relative
+   on desktop). Borderless so it reads as a chrome accent rather than a
+   chip pasted on top of the panel. */
+.settings-trigger {
+  position: absolute;
+  top: max(8px, env(safe-area-inset-top));
+  right: max(10px, env(safe-area-inset-right));
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 0;
+  cursor: pointer;
+}
+.settings-trigger:hover { color: var(--text-secondary); }
+.settings-trigger-icon { display: block; }
+
+/* Landscape mobile: chrome-top is a short horizontal strip with the day
+   pill centered vertically. Center the gear the same way instead of
+   pinning it to the top edge, so the two visually share a row. */
+@media (max-width: 1023.98px) and (pointer: coarse) and (orientation: landscape) {
+  .settings-trigger {
+    top: 50%;
+    transform: translateY(-50%);
+    right: max(14px, env(safe-area-inset-right));
+  }
+}
+
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.settings-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 9, 7, 0.78);
+}
+.settings-card {
+  position: relative;
+  background: var(--bg-chassis);
+  color: var(--text-primary);
+  border: 1px solid var(--text-engraved);
+  border-radius: 6px;
+  padding: 24px 24px 20px;
+  width: 100%;
+  max-width: 460px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  font-family: var(--font-body);
+}
+.settings-close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+.settings-close:hover { color: var(--text-primary); }
+.settings-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  margin: 0 0 16px;
+  letter-spacing: 0.04em;
+}
+.settings-section { margin-bottom: 22px; }
+.settings-section:last-child { margin-bottom: 0; }
+.settings-section h3 {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin: 0 0 8px;
+}
+.settings-hint {
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin: 0 0 10px;
+  line-height: 1.4;
+}
+.settings-textarea {
+  width: 100%;
+  min-height: 90px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: var(--bg-room);
+  color: var(--text-primary);
+  border: 1px solid var(--text-engraved);
+  border-radius: 3px;
+  padding: 8px;
+  resize: vertical;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+}
+.settings-btn {
+  background: transparent;
+  border: 1px solid var(--text-muted);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 8px 14px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.settings-btn:hover:not(:disabled) {
+  border-color: var(--text-secondary);
+  color: var(--text-primary);
+}
+.settings-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.settings-btn--primary {
+  background: var(--text-primary);
+  color: var(--bg-chassis);
+  border-color: var(--text-primary);
+}
+.settings-btn--primary:hover:not(:disabled) {
+  background: var(--text-secondary);
+  border-color: var(--text-secondary);
+  color: var(--bg-chassis);
+}
+.settings-error {
+  color: #d97b6d;
+  font-size: 12px;
+  margin: 4px 0 10px;
+  font-family: var(--font-mono);
+}
+.settings-confirm {
+  border: 1px solid var(--text-engraved);
+  border-radius: 3px;
+  padding: 12px;
+  margin-top: 4px;
+}
+.settings-confirm p {
+  margin: 0 0 10px;
+  font-size: 13px;
+}
+.settings-confirm-row {
+  display: flex;
+  gap: 8px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   HISTORY EDITOR — standalone page at ?mode=editor, hidden from the
+   game UI. Same chassis palette as Settings; full-page layout because
+   the day list can grow long.
+   ───────────────────────────────────────────────────────────────────── */
+.editor-page {
+  min-height: 100vh;
+  background: var(--bg-room);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  padding: 24px;
+  box-sizing: border-box;
+}
+.editor-header { max-width: 720px; margin: 0 auto 24px; }
+.editor-header h1 {
+  font-family: var(--font-display);
+  font-size: 32px;
+  margin: 0 0 8px;
+  letter-spacing: 0.04em;
+}
+.editor-sub {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0;
+}
+.editor-link {
+  color: var(--text-primary);
+  text-decoration: underline;
+  margin-left: 4px;
+}
+.editor-section {
+  max-width: 720px;
+  margin: 0 auto 28px;
+  border-top: 1px solid var(--text-engraved);
+  padding-top: 16px;
+}
+.editor-section h2 {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin: 0 0 12px;
+}
+.editor-textarea {
+  width: 100%;
+  min-height: 100px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: var(--bg-chassis);
+  color: var(--text-primary);
+  border: 1px solid var(--text-engraved);
+  border-radius: 3px;
+  padding: 8px;
+  resize: vertical;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+}
+.editor-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.editor-ok {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin: 6px 0 0;
+}
+.editor-bulk {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.editor-bulk-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.editor-bulk label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.editor-input-num {
+  width: 70px;
+  background: var(--bg-chassis);
+  border: 1px solid var(--text-engraved);
+  border-radius: 3px;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 4px 6px;
+}
+.editor-hint {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin: 4px 0 12px;
+}
+.editor-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border: 1px solid var(--text-engraved);
+  border-radius: 3px;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+.editor-list-row {
+  display: grid;
+  grid-template-columns: 80px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--bg-chassis);
+}
+.editor-list-row:last-child { border-bottom: none; }
+.editor-list-day {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-primary);
+}
+.editor-list-meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+.editor-list-btns { display: flex; gap: 4px; }
+.editor-pill {
+  background: transparent;
+  border: 1px solid var(--text-engraved);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  padding: 4px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.editor-pill:hover { color: var(--text-secondary); border-color: var(--text-muted); }
+.editor-pill--on { background: var(--text-engraved); color: var(--text-primary); border-color: var(--text-engraved); }
+.editor-pill--won.editor-pill--on { background: #4a6b3a; border-color: #4a6b3a; color: #eef3e2; }
+.editor-pill--lost.editor-pill--on { background: #6e3a35; border-color: #6e3a35; color: #f3e2e0; }

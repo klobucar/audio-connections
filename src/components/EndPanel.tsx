@@ -28,10 +28,18 @@ const COPY_LABEL: Record<CopyState, string> = {
 
 export function EndPanel({ won, day, guessHistory, author, date }: EndPanelProps) {
   const [copyState, setCopyState] = useState<CopyState>('idle');
+  // A record without guessHistory came from the editor (or a future schema
+  // that didn't carry it). The emoji grid and the per-side recovery count
+  // need the history, so we render a simpler card without them.
+  const hasHistory = guessHistory.length > 0;
   const shareText = buildShareText(day, guessHistory);
   const sidesDone = guessHistory.filter((g) => g.correct).length;
   const headline = won ? 'Mixtape Mastered.' : 'Out of Tape.';
-  const subhead = won ? 'Full tape · 4/4 sides' : `Recovered ${sidesDone}/4 sides`;
+  const subhead = won
+    ? 'Full tape · 4/4 sides'
+    : hasHistory
+      ? `Recovered ${sidesDone}/4 sides`
+      : 'Tape ejected';
   const cat = `AC-${String(day).padStart(3, '0')}`;
   const year = date.match(/\d{4}/)?.[0] ?? '';
   const runout = `${cat}-${won ? 'A' : 'B'} · ℗ ${year} · Puzzle by ${author} · Ferric Master NR`;
@@ -68,17 +76,21 @@ export function EndPanel({ won, day, guessHistory, author, date }: EndPanelProps
           <dd>{date}</dd>
         </div>
       </dl>
-      <div className="share-text" data-testid="share-text">
-        {shareText}
-      </div>
-      <button
-        type="button"
-        className={`copy-btn${copyState === 'copied' ? ' copied' : ''}`}
-        onClick={handleCopy}
-        data-testid="copy-btn"
-      >
-        {COPY_LABEL[copyState]}
-      </button>
+      {hasHistory && (
+        <>
+          <div className="share-text" data-testid="share-text">
+            {shareText}
+          </div>
+          <button
+            type="button"
+            className={`copy-btn${copyState === 'copied' ? ' copied' : ''}`}
+            onClick={handleCopy}
+            data-testid="copy-btn"
+          >
+            {COPY_LABEL[copyState]}
+          </button>
+        </>
+      )}
       <div className="end-runout" aria-hidden="true">
         {runout}
       </div>
