@@ -34,7 +34,7 @@ const puzzle: Puzzle = {
       ],
     },
     {
-      theme: 'Bands that changed names 3 or more times',
+      theme: 'Bands that changed names at least twice',
       tracks: [
         { id: 281811771, artist: 'Jefferson Airplane', title: 'White Rabbit', note: 'Jefferson Airplane/Jefferson Starship/Starship' },
         { id: 590431785, artist: 'Linkin Park', title: 'In the End', note: 'Xero/Hybrid Theory/Lincoln Park/Linkin Park' },
