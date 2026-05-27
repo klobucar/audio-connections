@@ -15,8 +15,9 @@ Each puzzle lives in its own file: `src/puzzles/day-NN.ts`.
    ```
    git clone https://github.com/YOUR-USERNAME/audio-connections.git
    cd audio-connections
-   npm install
+   npm run setup
    ```
+   (`npm run setup` runs `npm ci` plus `npx playwright install` — the latter is needed because our `.npmrc` blocks third-party install scripts as a supply-chain guard. Plain `npm install` works too if you'll only run `npm run validate` and never the Playwright suite.)
 
 ## Writing your puzzle
 

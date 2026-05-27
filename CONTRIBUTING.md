@@ -13,7 +13,7 @@ For puzzle submissions, see [PUZZLE_AUTHORS.md](./PUZZLE_AUTHORS.md). This doc i
 ## Local commands
 
 ```
-npm install            Install dependencies.
+npm run setup          One-time install. Runs `npm ci` then `npx playwright install`.
 npm run dev            Run the dev server (Vite, http://localhost:5173).
 npm run build          Typecheck + production build.
 npm run typecheck      TypeScript check only, no build.
@@ -22,6 +22,8 @@ npm run test:itunes    Vitest with the iTunes config. ~10-20s. Hits the iTunes A
 npm test               Playwright end-to-end. ~30-60s. Boots dev server, drives Chromium.
 npm run validate       Composite for puzzle authors: npm run typecheck + test:unit + test:itunes.
 ```
+
+`npm run setup` exists because `.npmrc` sets `ignore-scripts=true` — every package's lifecycle scripts (preinstall / install / postinstall) are blocked on `npm ci` and `npm install`. That closes the primary npm supply-chain attack vector. The one package in our tree that legitimately needs a postinstall is Playwright (downloads browser binaries); `npm run setup` does that explicit step after the install. If you ever add a dep that genuinely needs an install hook, wire it into the `setup` script too rather than relaxing the .npmrc.
 
 ## Test taxonomy
 

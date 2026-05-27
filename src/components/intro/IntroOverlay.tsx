@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type JSX } from 'react';
 import { useIsMobile, useOrientation } from '../../hooks/useOrientation';
 import { IntroCard1 } from './IntroCard1';
 import { IntroCard2 } from './IntroCard2';
