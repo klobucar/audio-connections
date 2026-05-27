@@ -15,6 +15,7 @@ interface TileProps {
   note: string;
   progress: number;
   disabled: boolean;
+  cueLimitReached?: boolean;
   /** Intro/demo mode: render every visual state but reject pointer + keyboard
    *  input. Differs from `disabled`, which dims the controls. */
   displayOnly?: boolean;
@@ -36,6 +37,7 @@ export function Tile({
   note,
   progress,
   disabled,
+  cueLimitReached = false,
   displayOnly = false,
   displayPeelState,
   onPlay,
@@ -161,7 +163,7 @@ export function Tile({
           type="button"
           className="select-btn"
           onClick={displayOnly ? undefined : onSelect}
-          disabled={disabled}
+          disabled={disabled || (cueLimitReached && !selected)}
           tabIndex={displayOnly ? -1 : undefined}
           data-testid={displayOnly ? undefined : `select-${track.id}`}
         >

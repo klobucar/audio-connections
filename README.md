@@ -19,7 +19,7 @@ Only finished days (won or lost) are carried. In-progress sessions stay on which
 
 ## Editing your history
 
-If you played offline, lost a backup, or want to clean up your record, there's a history editor at [`/?mode=editor`](https://audioconnections.io/?mode=editor). It's not linked from the game itself.
+If you played offline, lost a backup, or want to clean up your record, there's a history editor at `/?mode=editor`. It's not linked from the game itself.
 
 The editor decodes a backup string, lets you mark each day as not played, won, or lost (individually or in bulk over a day range), and re-encodes a new backup string you can import back into the game. It can also read from and write directly to this device's localStorage as a shortcut around the copy/paste round-trip.
 

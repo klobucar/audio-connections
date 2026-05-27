@@ -62,7 +62,7 @@
   /* ---- TEXT -------------------------------------------------------------- */
   --text-primary:   #f0eadb;
   --text-secondary: #aea493;
-  --text-muted:     #6a6358;
+  --text-muted:     #807769;
   --text-engraved:  #8a8579;
 
   /* ---- MOTION ------------------------------------------------------------ */
@@ -373,6 +373,7 @@ h1 {
   box-shadow:
     inset 0 1px 0 var(--bevel-light),
     inset 0 -1px 0 var(--bevel-dark),
+    0 0 0 1px rgba(255, 255, 255, 0.22),
     0 3px 8px rgba(0, 0, 0, 0.55);
   overflow: hidden;
 }
@@ -697,13 +698,6 @@ h1 {
   transform-origin: left top;
   padding-top: 1px;
 }
-.tile-label:focus-within {
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.5),
-    inset 0 0 0 1.5px var(--accent),
-    inset 0 -8px 12px rgba(184, 169, 115, 0.18);
-}
-
 /* ── Label peel / reveal (prototype) ─────────────────────────────────
    .tile-label-stack overlaps two layers in the tile's first grid row:
      1. .tile-reveal     — answer card (artist + title) on top of the deck
@@ -908,8 +902,14 @@ h1 {
 }
 .play-btn:disabled,
 .select-btn:disabled {
-  opacity: 0.55;
   cursor: not-allowed;
+  background: #101115;
+  color: var(--text-engraved);
+  border-color: rgba(255, 255, 255, 0.10);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    0 1px 0 #050608,
+    0 1px 2px rgba(0, 0, 0, 0.3);
 }
 .play-btn .icon {
   display: inline-block;
@@ -993,9 +993,21 @@ h1 {
     0 0 0 #050608,
     0 1px 2px rgba(0, 0, 0, 0.5);
 }
+.action:focus-visible,
+.play-btn:focus-visible,
+.select-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 .action:disabled {
-  opacity: 0.5;
   cursor: not-allowed;
+  background: #1c1d22;
+  color: var(--text-engraved);
+  border-color: rgba(255, 255, 255, 0.10);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    0 1px 0 #050608,
+    0 2px 3px rgba(0, 0, 0, 0.35);
 }
 .action.primary {
   /* lit phosphor readout instead of brass */
@@ -1011,14 +1023,14 @@ h1 {
     0 4px 6px rgba(0, 0, 0, 0.5);
 }
 .action.primary:disabled {
-  background: linear-gradient(180deg, #3a3b41 0%, #1c1d22 100%);
-  color: #6a6358;
+  background: #1c1d22;
+  color: var(--text-engraved);
   text-shadow: none;
+  border-color: rgba(255, 255, 255, 0.10);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
-    0 3px 0 #050608,
-    0 4px 6px rgba(0, 0, 0, 0.5);
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    0 1px 0 #050608,
+    0 2px 3px rgba(0, 0, 0, 0.35);
 }
 .action .key-stripe {
   display: block;
@@ -2366,6 +2378,7 @@ h1 {
   box-shadow:
     inset 0 1px 0 var(--bevel-light),
     inset 0 -1px 0 var(--bevel-dark),
+    0 0 0 1px rgba(255, 255, 255, 0.22),
     0 3px 8px rgba(0, 0, 0, 0.55);
   overflow: hidden;
 }

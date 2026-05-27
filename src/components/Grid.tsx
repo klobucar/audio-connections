@@ -15,6 +15,7 @@ interface GridProps {
   playProgress: number;
   notes: Map<number, string>;
   disabled: boolean;
+  cueLimitReached: boolean;
   /** Active tile shape on mobile/tablet. Desktop (≥1024px) ignores this. */
   tileShape: TileShape;
   onPlay: (id: number) => void;
@@ -32,6 +33,7 @@ export function Grid({
   playProgress,
   notes,
   disabled,
+  cueLimitReached,
   tileShape,
   onPlay,
   onSelect,
@@ -83,6 +85,7 @@ export function Grid({
             note={notes.get(track.id) ?? ''}
             progress={playingId === track.id ? playProgress : 0}
             disabled={disabled}
+            cueLimitReached={cueLimitReached}
             onPlay={() => onPlay(track.id)}
             onSelect={() => onSelect(track.id)}
             onNoteChange={(val) => onNoteChange(track.id, val)}

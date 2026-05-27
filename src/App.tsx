@@ -175,6 +175,7 @@ export function App() {
   const isBroken = session.state.broken;
   const isLoading = session.state.tracks.length === 0 && !isBroken;
   const tilesDisabled = session.state.gameOver || isLoading || session.matchedThemes.size > 0;
+  const cueLimitReached = session.state.selected.size === 4;
 
   // The mobile chrome lives in dedicated regions of the app shell. Chrome
   // row/column axis is parameterized per the PoC handoff — the JSX picks
@@ -192,7 +193,8 @@ export function App() {
   // data-testid stays present for tests.
   const statusToast = (
     <div className="status" data-testid="status">
-      {statusMsg || session.state.loadStatus}
+      <span role="status" aria-live="polite">{statusMsg}</span>
+      {!statusMsg && session.state.loadStatus}
     </div>
   );
 
@@ -365,6 +367,7 @@ export function App() {
               playProgress={audio.playProgress}
               notes={session.state.notes}
               disabled={tilesDisabled}
+              cueLimitReached={cueLimitReached}
               tileShape={TILE_SHAPE}
               onPlay={audio.togglePlay}
               onSelect={session.toggleSelect}

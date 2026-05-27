@@ -11,6 +11,7 @@ interface LandscapeTileProps {
   note: string;
   progress: number;
   disabled: boolean;
+  cueLimitReached: boolean;
   onPlay: () => void;
   onSelect: () => void;
   onNoteChange: (val: string) => void;
@@ -29,6 +30,7 @@ export function LandscapeTile({
   note,
   progress,
   disabled,
+  cueLimitReached,
   onPlay,
   onSelect,
   onNoteChange,
@@ -89,7 +91,7 @@ export function LandscapeTile({
           type="button"
           className="select-btn"
           onClick={onSelect}
-          disabled={disabled}
+          disabled={disabled || (cueLimitReached && !selected)}
           data-testid={`select-${track.id}`}
         >
           CUE
