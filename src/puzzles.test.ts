@@ -93,14 +93,16 @@ describe('validatePuzzle — constraint field', () => {
 
 describe('shipped puzzles respect the constraint limit', () => {
   // Belt-and-suspenders: importing puzzles already runs validatePuzzle on each
-  // file (so any over-limit constraint would have already thrown). This test
-  // re-asserts per-day so failures are named clearly.
-  it.each(puzzles.filter((p) => p.constraint))(
-    'day $day constraint is within $MAX_CONSTRAINT_LENGTH chars',
-    (p) => {
-      expect(p.constraint!.length, `day ${p.day}: "${p.constraint}"`).toBeLessThanOrEqual(
+  // file (so any over-limit constraint would have already thrown). Loop in a
+  // single `it` rather than `it.each` so vitest doesn't error when no shipped
+  // puzzle has set a constraint yet (empty arrays in it.each fail the suite).
+  // The assertion message names the failing day so a violation is still clear.
+  it('every constrained puzzle is within the soft cap', () => {
+    for (const p of puzzles) {
+      if (!p.constraint) continue;
+      expect(p.constraint.length, `day ${p.day}: "${p.constraint}"`).toBeLessThanOrEqual(
         MAX_CONSTRAINT_LENGTH,
       );
-    },
-  );
+    }
+  });
 });
