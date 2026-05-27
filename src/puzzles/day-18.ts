@@ -28,7 +28,7 @@ const puzzle: Puzzle = {
       theme: 'Songs about drinking alone',
       tracks: [
         { id: 1583655305, artist: 'Merle Haggard', title: "I Think I'll Just Stay Here and Drink" },
-        { id: 1589508468, artist: 'Lorde', title: 'Liability' },
+        { id: 882945383, artist: 'Sia', title: 'Chandelier' },
         { id: 158182876, artist: 'Hank Williams', title: "There's a Tear In My Beer" },
         { id: 1611391433, artist: "George Thorogood and the Destroyers", title: 'I Drink Alone' },
       ],
@@ -36,10 +36,10 @@ const puzzle: Puzzle = {
     {
       theme: 'Artists who were adopted',
       tracks: [
-        { id: 254344790, artist: 'Run-DMC', title: "It's Tricky" },
-        { id: 1842974732, artist: 'Blondie', title: "Heart of Glass" },
-        { id: 331985117, artist: 'Faith Hill', title: "Wild One" },
-        { id: 388153872, artist: 'Sarah McLachlan', title: "Building a Mystery" },
+        { id: 254344790, artist: 'Run-DMC', title: "It's Tricky", note: "Darryl DMC McDaniels" },
+        { id: 1842974732, artist: 'Blondie', title: "Heart of Glass", note: "Debbie Harry" },
+        { id: 331985117, artist: 'Faith Hill', title: "Wild One", note: "Faith Hill" },
+        { id: 388153872, artist: 'Sarah McLachlan', title: "Building a Mystery", note: "Sarah McLachlan" },
       ],
     },
   ],
