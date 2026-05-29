@@ -1923,7 +1923,9 @@ h1 {
     overflow: hidden;
   }
 
-  /* Full-bleed shell with stacked rows */
+  /* Full-bleed shell with stacked rows. The keyboard no longer fights this
+     layout — note editing moves into NoteSheet, which positions itself above
+     the keyboard via --keyboard-inset — so the shell stays a plain 100dvh. */
   .app-shell {
     max-width: none;
     margin: 0;
@@ -2223,6 +2225,94 @@ h1 {
 .cue-tray-dot.on {
   background: var(--warn);
   border-color: var(--warn);
+}
+
+/* ----- NoteSheet (mobile per-tile note editor) ------------------------- */
+/* On mobile the tile note is a read-only .tile-label-input whose tap opens
+   this bottom sheet. The sheet pins above the soft keyboard via the
+   --keyboard-inset published by useKeyboardInset, so the field + replay
+   control sit right on top of the keys and the grid never gets crushed. */
+.note-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 60;
+}
+.note-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: var(--keyboard-inset, 0px);
+  z-index: 61;
+  background: var(--chrome-panel);
+  border-top: 1px solid var(--chrome-border);
+  border-radius: 14px 14px 0 0;
+  padding: 12px 16px calc(14px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.5);
+}
+.note-sheet-close {
+  flex: 0 0 auto;
+  background: transparent;
+  border: none;
+  color: var(--accent-blue);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  padding: 4px 6px;
+}
+.note-sheet-transport {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.note-sheet-transport .play-btn {
+  flex: 0 0 auto;
+}
+.note-sheet-progress {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+.note-sheet-progress-fill {
+  height: 100%;
+  background: var(--accent-blue);
+  transition: width 0.1s linear;
+}
+.note-sheet-input {
+  width: 100%;
+  /* Same ruled-paper SVG pattern as .tile-label so the sheet reads as the
+     cassette label writ large. 28px pitch matches the 18px handwriting so
+     lines fall under the text. */
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='28' viewBox='0 0 1 28' preserveAspectRatio='none'%3E%3Crect y='27' width='1' height='1' fill='%236a5a3a' fill-opacity='.16' shape-rendering='crispEdges'/%3E%3C/svg%3E"),
+    linear-gradient(180deg, var(--paper-warm) 0%, var(--paper) 100%);
+  background-size: 100% 28px, 100% 100%;
+  background-position: 0 12px, 0 0;
+  background-repeat: repeat, no-repeat;
+  border: 1px solid var(--paper-shadow);
+  border-radius: 4px;
+  color: #0d3a72; /* ballpoint blue, matching the inline field's filled state */
+  font-family: var(--font-hand);
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 28px;
+  padding: 8px 12px;
+  resize: none;
+  outline: none;
+}
+.note-sheet-input::placeholder {
+  color: rgba(26, 22, 16, 0.4);
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-style: italic;
+  font-size: 14px;
 }
 
 /* ----- MobileActionRow (mobile chrome) -------------------------------- */

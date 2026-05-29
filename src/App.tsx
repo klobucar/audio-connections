@@ -7,6 +7,7 @@ import { useAudio } from './hooks/useAudio';
 import { useKonami } from './hooks/useKonami';
 import { usePuzzleSession } from './hooks/usePuzzleSession';
 import { useIsMobile, useOrientation } from './hooks/useOrientation';
+import { useKeyboardInset } from './hooks/useKeyboardInset';
 import { DaySelector } from './components/DaySelector';
 import { Countdown } from './components/Countdown';
 import { Grid } from './components/Grid';
@@ -22,12 +23,16 @@ import { IntroOverlay, INTRO_VERSION } from './components/intro/IntroOverlay';
 import { ConstraintModal } from './components/ConstraintModal';
 import { BrokenDayCard } from './components/BrokenDayCard';
 import { SettingsModal } from './components/SettingsModal';
+import { NoteSheet } from './components/NoteSheet';
 
 const STATUS_TIMEOUT_MS = 10000;
 
 export function App() {
   const orientation = useOrientation();
   const isMobile = useIsMobile();
+  // Publishes --keyboard-inset so the mobile shell shrinks above the iOS
+  // soft keyboard instead of leaving the pinned bottom chrome behind it.
+  useKeyboardInset();
 
   const [currentIndex, setCurrentIndex] = useState(() => {
     const latestIdx = latestReleasedIndex();
@@ -69,6 +74,8 @@ export function App() {
   const [showConstraintModal, setShowConstraintModal] = useState(false);
   const dismissConstraintModal = useCallback(() => setShowConstraintModal(false), []);
   const [showSettings, setShowSettings] = useState(false);
+  // Track id whose note is being edited in the mobile NoteSheet (null = closed).
+  const [editingTileId, setEditingTileId] = useState<number | null>(null);
   /** Days unlocked at runtime — by Konami (all of them) or by the countdown
    *  ticking past a `releaseAt` (one at a time). Either case adds the day
    *  to this set; nobody reaches into module-level puzzle data anymore. */
@@ -228,6 +235,20 @@ export function App() {
         <ConstraintModal constraint={puzzle.constraint} onDismiss={dismissConstraintModal} />
       )}
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+      {editingTileId !== null && (() => {
+        const track = session.state.tracks.find((t) => t.id === editingTileId);
+        if (!track) return null;
+        return (
+          <NoteSheet
+            note={session.state.notes.get(track.id) ?? ''}
+            playing={audio.playingId === track.id}
+            progress={audio.playingId === track.id ? audio.playProgress : 0}
+            onNoteChange={(val) => session.setNote(track.id, val)}
+            onPlay={() => audio.togglePlay(track.id)}
+            onClose={() => setEditingTileId(null)}
+          />
+        );
+      })()}
     <div
       className="app-shell"
       data-orientation={orientation}
@@ -366,6 +387,7 @@ export function App() {
               onPlay={audio.togglePlay}
               onSelect={session.toggleSelect}
               onNoteChange={session.setNote}
+              onEditNote={isMobile ? setEditingTileId : undefined}
             />
           </>
         )}

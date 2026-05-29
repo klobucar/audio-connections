@@ -2,6 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <!-- No interactive-widget=resizes-content: letting the soft keyboard shrink
+       the layout viewport flips the (orientation: landscape) media query when
+       the surviving viewport is wider than tall, swapping the app into
+       landscape chrome mid-type. The NoteSheet instead lifts above the
+       keyboard via the visualViewport-driven --keyboard-inset (see App),
+       which works on iOS and Android without resizing the layout viewport. -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <!-- App overwrites this at runtime with the current puzzle's day + author.
        Keep the static fallback generic so it can't drift as puzzles ship. -->

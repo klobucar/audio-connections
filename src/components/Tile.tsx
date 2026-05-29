@@ -22,6 +22,9 @@ interface TileProps {
   /** Intro/demo only: drive the peel state from the parent (the click-to-
    *  arm/confirm flow is internal otherwise). Ignored unless set. */
   displayPeelState?: PeelState;
+  /** When set (mobile), the note region becomes a tap target that opens the
+   *  NoteSheet instead of an inline editable textarea. */
+  onEditNote?: () => void;
   onPlay: () => void;
   onSelect: () => void;
   onNoteChange: (val: string) => void;
@@ -40,6 +43,7 @@ export function Tile({
   cueLimitReached = false,
   displayOnly = false,
   displayPeelState,
+  onEditNote,
   onPlay,
   onSelect,
   onNoteChange,
@@ -104,17 +108,31 @@ export function Tile({
 
         <div className="tile-label">
           <div className="tile-track-no">C-90 · TYPE II</div>
+          {/* Same textarea on desktop and mobile so sizing, placeholder, and
+              the filled-handwriting style stay identical. On mobile (onEditNote
+              set) it's read-only and a tap opens the NoteSheet instead of
+              focusing inline; mousedown is suppressed so no caret/keyboard
+              flashes before the sheet. */}
           <textarea
             className="tile-label-input"
             placeholder="write title…"
             rows={2}
             value={note}
-            readOnly={displayOnly || peeled}
+            readOnly={displayOnly || peeled || !!onEditNote}
             tabIndex={displayOnly ? -1 : undefined}
-            onChange={displayOnly ? undefined : (e) => onNoteChange(e.target.value)}
+            onChange={displayOnly || onEditNote ? undefined : (e) => onNoteChange(e.target.value)}
+            onMouseDown={onEditNote ? (e) => e.preventDefault() : undefined}
+            onClick={onEditNote}
             onKeyDown={(e) => {
-              // Enter inserts a newline (multi-line notes like "Song\nArtist");
-              // focus changes only on click/touch. Escape commits/blurs.
+              if (onEditNote) {
+                // Read-only display: Enter/Space opens the sheet (keyboard a11y).
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onEditNote();
+                }
+                return;
+              }
+              // Inline (desktop): Enter inserts a newline; Escape commits/blurs.
               if (e.key === 'Escape') {
                 e.preventDefault();
                 (e.target as HTMLTextAreaElement).blur();
@@ -125,7 +143,13 @@ export function Tile({
               // reads from its start rather than scrolled to the caret.
               e.target.scrollTop = 0;
             }}
-            aria-label={`Note for track ${index + 1}`}
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck={false}
+            aria-label={
+              onEditNote ? `Edit note for track ${index + 1}` : `Note for track ${index + 1}`
+            }
+            data-testid={onEditNote ? `note-trigger-${track.id}` : undefined}
           />
           <div className="tile-label__flap" aria-hidden="true" />
         </div>

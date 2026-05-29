@@ -16,6 +16,10 @@ interface GridProps {
   onPlay: (id: number) => void;
   onSelect: (id: number) => void;
   onNoteChange: (id: number, value: string) => void;
+  /** When set (mobile), tapping a tile's note opens the NoteSheet instead of
+   *  focusing an inline field. Omitted on desktop, where inline editing
+   *  stays. */
+  onEditNote?: (id: number) => void;
 }
 
 export function Grid({
@@ -32,6 +36,7 @@ export function Grid({
   onPlay,
   onSelect,
   onNoteChange,
+  onEditNote,
 }: GridProps) {
   // Keep tiles in the DOM during pulse + fade animations so they can play
   // out before being removed by the solvedThemes filter.
@@ -81,6 +86,7 @@ export function Grid({
             onPlay={() => onPlay(track.id)}
             onSelect={() => onSelect(track.id)}
             onNoteChange={(val) => onNoteChange(track.id, val)}
+            onEditNote={onEditNote ? () => onEditNote(track.id) : undefined}
           />
         ))}
       </div>
