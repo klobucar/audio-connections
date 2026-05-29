@@ -1,9 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { LoadedTrack } from '../types';
 import { Tile } from './Tile';
-import { LandscapeTile } from './LandscapeTile';
-
-export type TileShape = 'portrait' | 'landscape';
 
 interface GridProps {
   tracks: LoadedTrack[];
@@ -16,8 +13,6 @@ interface GridProps {
   notes: Map<number, string>;
   disabled: boolean;
   cueLimitReached: boolean;
-  /** Active tile shape on mobile/tablet. Desktop (≥1024px) ignores this. */
-  tileShape: TileShape;
   onPlay: (id: number) => void;
   onSelect: (id: number) => void;
   onNoteChange: (id: number, value: string) => void;
@@ -34,7 +29,6 @@ export function Grid({
   notes,
   disabled,
   cueLimitReached,
-  tileShape,
   onPlay,
   onSelect,
   onNoteChange,
@@ -68,13 +62,11 @@ export function Grid({
     centeredRef.current = true;
   }, [visible.length]);
 
-  const TileComponent = tileShape === 'landscape' ? LandscapeTile : Tile;
-
   return (
     <div className="bay">
-      <div className={`grid grid--${tileShape}-tile`} data-testid="grid" ref={gridRef}>
+      <div className="grid grid--portrait-tile" data-testid="grid" ref={gridRef}>
         {visible.map((track, idx) => (
-          <TileComponent
+          <Tile
             key={track.id}
             track={track}
             index={idx}

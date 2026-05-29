@@ -1891,14 +1891,6 @@ h1 {
   .grid--portrait-tile {
     grid-template-columns: repeat(2, 1fr);
   }
-  .grid--landscape-tile {
-    grid-template-columns: 1fr;
-  }
-  @media (min-width: 480px) {
-    .grid--landscape-tile {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
 }
 
 /* ----- App shell at < 1024px — portrait orientation default ------------ */
@@ -2393,143 +2385,6 @@ h1 {
   cursor: not-allowed;
 }
 
-/* ----- Landscape tile -------------------------------------------------- */
-.tile-l {
-  position: relative;
-  background:
-    repeating-linear-gradient(0deg,
-      rgba(255, 255, 255, 0.018) 0 1px,
-      transparent 1px 4px),
-    linear-gradient(180deg, #2c2d32 0%, #1a1b1f 100%);
-  border: 2px solid #0a0b0e;
-  border-radius: 6px;
-  padding: 8px 10px;
-  display: grid;
-  grid-template-columns: 1fr 64px;
-  grid-template-rows: auto 1fr;
-  column-gap: 10px;
-  row-gap: 6px;
-  min-height: 96px;
-  transition: transform var(--spring), box-shadow var(--ease), border-color var(--ease);
-  box-shadow:
-    inset 0 1px 0 var(--bevel-light),
-    inset 0 -1px 0 var(--bevel-dark),
-    0 0 0 1px rgba(255, 255, 255, 0.22),
-    0 3px 8px rgba(0, 0, 0, 0.55);
-  overflow: hidden;
-}
-.tile-l.selected {
-  border-color: var(--accent-blue);
-  box-shadow:
-    0 0 0 2px var(--accent-blue-soft),
-    inset 0 1px 0 var(--bevel-light),
-    0 0 16px rgba(74, 158, 255, 0.25);
-}
-.tile-l.exiting {
-  opacity: 0;
-  transform: translateX(40px) scale(0.9);
-  transition:
-    opacity var(--exit-anim-ms) ease,
-    transform var(--exit-anim-ms) cubic-bezier(.4, 0, .7, .2);
-  pointer-events: none;
-}
-.tile-l.matched-theme-0 { --pulse: var(--theme-0); }
-.tile-l.matched-theme-1 { --pulse: var(--theme-1); }
-.tile-l.matched-theme-2 { --pulse: var(--theme-2); }
-.tile-l.matched-theme-3 { --pulse: var(--theme-3); }
-.tile-l.matched {
-  animation: matchPulse var(--match-pulse-ms) ease-out;
-  border-color: var(--pulse);
-  pointer-events: none;
-  z-index: 2;
-}
-.tile-l-label {
-  grid-column: 1 / -1;
-  background:
-    repeating-linear-gradient(0deg,
-      transparent 0 12px,
-      rgba(106, 90, 58, 0.16) 12px 13px),
-    linear-gradient(180deg, var(--paper-warm) 0%, var(--paper) 100%);
-  border: 1px solid var(--paper-shadow);
-  border-radius: 2px;
-  padding: 4px 8px 5px;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-.tile-l-track-no {
-  font-family: var(--font-mono);
-  font-size: 7px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--paper-ink-soft);
-}
-.tile-l-label-input {
-  flex: 1;
-  width: 100%;
-  background: transparent;
-  border: none;
-  color: var(--paper-ink);
-  font-family: var(--font-mono);
-  font-size: 16px;
-  line-height: 1.2;
-  padding: 0;
-  outline: none;
-  resize: none;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.tile-l-label-input::placeholder {
-  color: rgba(26, 22, 16, 0.32);
-  font-style: italic;
-  font-size: 13px;
-}
-.tile-l-label-input:not(:placeholder-shown) {
-  font-family: var(--font-hand);
-  font-size: 17px;
-  color: #0d3a72;
-  white-space: nowrap;
-}
-.tile-l-deck-wrap {
-  background: #0a0b0e;
-  border-radius: 3px;
-  padding: 4px 6px;
-  display: flex;
-  align-items: center;
-  min-height: 36px;
-}
-.tile-l-deck-wrap .cassette-deck {
-  margin: 0;
-  height: 28px;
-  width: 100%;
-  background: transparent;
-  border: none;
-  box-shadow: none;
-}
-.tile-l-deck-wrap .cassette-deck::before,
-.tile-l-deck-wrap .cassette-deck::after {
-  display: none;
-}
-.tile-l-deck-wrap .reel {
-  width: 22px;
-  height: 22px;
-}
-.tile-l-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  align-self: center;
-}
-.tile-l-actions .play-btn__face,
-.tile-l-actions .select-btn__face {
-  height: 22px;
-  font-size: 9.5px;
-  letter-spacing: 0.06em;
-  padding: 0 4px;
-}
-
 /* ----- Day pill compact form ------------------------------------------ */
 .day-pill--compact {
   min-width: 0;
@@ -2679,13 +2534,6 @@ h1 {
     padding-right: max(10px, env(safe-area-inset-right));
   }
 }
-
-/* ----- Reduce motion on the new chrome -------------------------------- */
-@media (prefers-reduced-motion: reduce) {
-  .tile-l.matched { animation: none; }
-  .tile-l.exiting { transition: opacity 1ms; transform: none; }
-}
-
 
 /* ==========================================================================
    INTRO CAROUSEL — one-time overlay shown on first visit. Reuses the real

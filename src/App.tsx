@@ -9,7 +9,7 @@ import { usePuzzleSession } from './hooks/usePuzzleSession';
 import { useIsMobile, useOrientation } from './hooks/useOrientation';
 import { DaySelector } from './components/DaySelector';
 import { Countdown } from './components/Countdown';
-import { Grid, type TileShape } from './components/Grid';
+import { Grid } from './components/Grid';
 import { SolvedList } from './components/SolvedList';
 import { SolvedBar } from './components/SolvedBar';
 import { MistakesDisplay } from './components/MistakesDisplay';
@@ -24,11 +24,6 @@ import { BrokenDayCard } from './components/BrokenDayCard';
 import { SettingsModal } from './components/SettingsModal';
 
 const STATUS_TIMEOUT_MS = 10000;
-
-/** Active tile shape on mobile/tablet (< 1024px). Desktop ignores this and
- *  always renders the existing 4×4 portrait-cassette grid. The PoC ships
- *  both shapes — flip this constant to compare. */
-const TILE_SHAPE: TileShape = 'portrait';
 
 export function App() {
   const orientation = useOrientation();
@@ -368,7 +363,6 @@ export function App() {
               notes={session.state.notes}
               disabled={tilesDisabled}
               cueLimitReached={cueLimitReached}
-              tileShape={TILE_SHAPE}
               onPlay={audio.togglePlay}
               onSelect={session.toggleSelect}
               onNoteChange={session.setNote}
