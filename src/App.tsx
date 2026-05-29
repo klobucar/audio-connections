@@ -377,13 +377,7 @@ export function App() {
           without loaded tracks. */}
       {isMobile && orientation === 'landscape' && !isBroken && (
         <aside className="chrome-right">
-          <CueTray
-            tracks={session.state.tracks}
-            selected={session.state.selected}
-            notes={session.state.notes}
-            orientation="vertical"
-            onDeselect={session.toggleSelect}
-          />
+          <CueTray selected={session.state.selected} orientation="vertical" />
           <div className="chrome-right-spacer" />
           {statusToast}
           <MobileActionRow
@@ -423,13 +417,7 @@ export function App() {
         {!isBroken && isMobile && orientation === 'portrait' && (
           <div className="chrome-bottom-mobile">
             <div className="cue-row">
-              <CueTray
-                tracks={session.state.tracks}
-                selected={session.state.selected}
-                notes={session.state.notes}
-                orientation="horizontal"
-                onDeselect={session.toggleSelect}
-              />
+              <CueTray selected={session.state.selected} orientation="horizontal" />
               <ResetButton onReset={session.resetPuzzle} />
             </div>
             {statusToast}
