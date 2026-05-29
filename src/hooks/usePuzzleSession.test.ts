@@ -244,6 +244,56 @@ describe('reset-puzzle', () => {
   });
 });
 
+describe("reducer 'apply-gains'", () => {
+  it('paints gain onto matching tracks, preserving order and other tracks', () => {
+    const s = reducer(freshSession(), {
+      type: 'apply-gains',
+      gains: new Map([
+        [1, { gainDb: -3.2 }],
+        [5, { gainDb: 2.1 }],
+      ]),
+    });
+    expect(s.tracks.map((t) => t.id)).toEqual([...Array(16).keys()]);
+    expect(s.tracks[1]).toMatchObject({ id: 1, gainDb: -3.2 });
+    expect(s.tracks[5]).toMatchObject({ id: 5, gainDb: 2.1 });
+    expect(s.tracks[0].gainDb).toBeUndefined();
+    expect(s.tracks[2].gainDb).toBeUndefined();
+  });
+
+  it('ignores ids with no matching track', () => {
+    const s = reducer(freshSession(), {
+      type: 'apply-gains',
+      gains: new Map([[999, { gainDb: 5 }]]),
+    });
+    expect(s.tracks.every((t) => t.gainDb === undefined)).toBe(true);
+  });
+
+  it('returns the same state for an empty or no-op map (no needless re-render)', () => {
+    const base = freshSession();
+    expect(reducer(base, { type: 'apply-gains', gains: new Map() })).toBe(base);
+    const once = reducer(base, {
+      type: 'apply-gains',
+      gains: new Map([[0, { gainDb: -1 }]]),
+    });
+    const twice = reducer(once, {
+      type: 'apply-gains',
+      gains: new Map([[0, { gainDb: -1 }]]),
+    });
+    expect(twice).toBe(once);
+  });
+
+  it('leaves day, themeStates, and selection untouched', () => {
+    const base = freshSession();
+    const s = reducer(base, {
+      type: 'apply-gains',
+      gains: new Map([[0, { gainDb: -2 }]]),
+    });
+    expect(s.day).toBe(base.day);
+    expect(s.themeStates).toBe(base.themeStates);
+    expect(s.selected).toBe(base.selected);
+  });
+});
+
 // classifyGuess is the pure verdict that submit() builds its dispatches and
 // status toasts on. submit() itself isn't unit-testable (animation timers,
 // React callbacks) — this covers the decision underneath it.

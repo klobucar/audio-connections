@@ -7,6 +7,7 @@
     "dev": "vite",
     "dev:https": "VITE_HTTPS=1 vite --host",
     "build": "tsc --noEmit && vite build",
+    "wasm:build": "bash wasm/build.sh",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "test": "playwright test",
@@ -27,6 +28,7 @@
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-basic-ssl": "^2.3.0",
     "@vitejs/plugin-react": "^6.0.2",
+    "fake-indexeddb": "^6.2.5",
     "typescript": "^5.9.3",
     "vite": "^8.0.13",
     "vitest": "^4.1.6"

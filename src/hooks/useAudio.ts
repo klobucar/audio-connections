@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { LoadedTrack } from '../types';
+import { dbToLinear } from '../replaygain/gain';
 
 export interface UseAudio {
   /** Track id currently playing, or null when nothing is. */
@@ -46,6 +47,15 @@ export function useAudio(tracks: LoadedTrack[]): UseAudio {
   // the 'play' listener can restore the playing state on OS resume. Cleared
   // by stopAudio and 'ended' — intentional stops that should not be resumed.
   const currentTrackIdRef = useRef<number | null>(null);
+
+  // Web Audio gain graph, built lazily on first real play so it can be skipped
+  // entirely (mock mode / Playwright StubAudio, or browsers without
+  // AudioContext). Once built, the reused element is routed through a GainNode
+  // for boost-capable, clip-safe ReplayGain. webAudioFailedRef latches a
+  // failure so we never retry and just fall back to raw element playback.
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const gainNodeRef = useRef<GainNode | null>(null);
+  const webAudioFailedRef = useRef(false);
 
   const ensureAudio = useCallback((): HTMLAudioElement => {
     let audio = audioRef.current;
@@ -101,6 +111,39 @@ export function useAudio(tracks: LoadedTrack[]): UseAudio {
     setPlayProgress(0);
   }, [expectSelfPause]);
 
+  // Build (once) the MediaElementSource → GainNode → destination graph around
+  // the reused element, returning the GainNode or null when Web Audio can't be
+  // used. createMediaElementSource throws on a non-HTMLMediaElement (the
+  // Playwright stub) and can only be called once per element, so this is both
+  // guarded and latched. Playback otherwise stays on the raw element — the
+  // media-key/suppressPause/sink-race logic is untouched.
+  const ensureWebAudio = useCallback((audio: HTMLAudioElement): GainNode | null => {
+    if (gainNodeRef.current) return gainNodeRef.current;
+    if (webAudioFailedRef.current) return null;
+    if (typeof HTMLMediaElement === 'undefined' || !(audio instanceof HTMLMediaElement)) {
+      return null;
+    }
+    const Ctor =
+      typeof AudioContext !== 'undefined'
+        ? AudioContext
+        : (globalThis as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!Ctor) return null;
+    try {
+      const ctx = new Ctor();
+      const source = ctx.createMediaElementSource(audio);
+      const gain = ctx.createGain();
+      source.connect(gain).connect(ctx.destination);
+      audioCtxRef.current = ctx;
+      gainNodeRef.current = gain;
+      return gain;
+    } catch (e) {
+      // Already-sourced element, iOS quirk, etc. Latch off and play raw.
+      webAudioFailedRef.current = true;
+      console.warn('Web Audio gain unavailable, playing without ReplayGain:', e);
+      return null;
+    }
+  }, []);
+
   const togglePlay = useCallback(
     (id: number) => {
       const track = tracks.find((t) => t.id === id);
@@ -129,6 +172,16 @@ export function useAudio(tracks: LoadedTrack[]): UseAudio {
       setPlayingId(id);
       setPlayProgress(0);
 
+      // Apply ReplayGain (boost-capable, clip-safe). Best-effort: every failure
+      // path falls back to unmodified playback. Set while the element is silent
+      // between plays, so there is no click; unity gain until measured.
+      const gainNode = ensureWebAudio(audio);
+      if (gainNode) {
+        const ctx = audioCtxRef.current;
+        if (ctx && ctx.state === 'suspended') void ctx.resume(); // on this gesture
+        gainNode.gain.value = track.gainDb !== undefined ? dbToLinear(track.gainDb) : 1;
+      }
+
       audio.play().catch((err: unknown) => {
         // AbortError fires when a rapid retoggle supersedes this play —
         // benign, the next play's state is already correct.
@@ -138,7 +191,7 @@ export function useAudio(tracks: LoadedTrack[]): UseAudio {
         setPlayProgress((cur) => (cur === 0 ? cur : 0));
       });
     },
-    [tracks, playingId, ensureAudio, stopAudio, expectSelfPause],
+    [tracks, playingId, ensureAudio, ensureWebAudio, stopAudio, expectSelfPause],
   );
 
   useEffect(() => {
@@ -146,6 +199,14 @@ export function useAudio(tracks: LoadedTrack[]): UseAudio {
       if (audioRef.current) audioRef.current.pause();
       audioRef.current = null;
       loadedSrcRef.current = null;
+      // Close the AudioContext once, on unmount only — not per day. Reopening
+      // would risk the very sink races the reused element avoids, and
+      // createMediaElementSource can't be re-run on the element anyway.
+      if (audioCtxRef.current) {
+        void audioCtxRef.current.close();
+        audioCtxRef.current = null;
+      }
+      gainNodeRef.current = null;
     };
   }, []);
 

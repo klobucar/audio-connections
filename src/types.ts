@@ -43,6 +43,10 @@ export interface LoadedTrack {
   artist: string;
   title: string;
   note?: string;
+  /** Clip-prevention-capped ReplayGain in dB (positive = boost, negative =
+   *  attenuate). Absent until the track's loudness has been measured, or when
+   *  measurement is unavailable — playback uses unity gain (0 dB) then. */
+  gainDb?: number;
 }
 
 export interface Guess {

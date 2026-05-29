@@ -1,0 +1,19 @@
+[package]
+name = "ac-ebur128"
+version = "0.0.0"
+edition = "2021"
+publish = false
+description = "Flat C-ABI wasm wrapper around the reference `ebur128` crate, vendored for audio-connections ReplayGain. See PROVENANCE.md."
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+ebur128 = "0.1"
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

@@ -66,6 +66,18 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      # Rebuild the ReplayGain wasm from its vendored Rust source so the
+      # deployed artifact is provably built from source, not a trusted committed
+      # binary. rustup (preinstalled on the runner) auto-installs the pinned
+      # toolchain + wasm32 target from wasm/ebur128/rust-toolchain.toml. The
+      # committed src/replaygain/ebur128.wasm stays as the no-Rust fallback for
+      # local dev and the test job; here it's regenerated and bundled fresh.
+      - name: Rebuild ReplayGain wasm from vendored Rust source
+        run: |
+          npm run wasm:build
+          if ! git diff --quiet -- src/replaygain/ebur128.wasm; then
+            echo "::warning::src/replaygain/ebur128.wasm differs from a fresh build of wasm/ebur128 (stale commit, or built on a different host). Deploying the freshly-built artifact."
+          fi
       - run: npm run build
       - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
         with:

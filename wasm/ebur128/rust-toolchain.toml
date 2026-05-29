@@ -1,0 +1,10 @@
+# Pin the toolchain so `npm run wasm:build` is reproducible — the deploy
+# workflow rebuilds ebur128.wasm from this source, and a fixed rustc version is
+# what makes that rebuild deterministic (an unpinned runner toolchain drifts
+# over time and could change the emitted bytes). Match the version recorded in
+# PROVENANCE.md. Only activates when cargo runs, so normal (no-Rust) local dev,
+# `npm run build`, and the test job are unaffected.
+[toolchain]
+channel = "1.94.1"
+targets = ["wasm32-unknown-unknown"]
+profile = "minimal"
