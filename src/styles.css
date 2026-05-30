@@ -125,6 +125,9 @@
     --exit-anim-ms: 1ms;
     --match-pulse-ms: 1ms;
   }
+  .mobile-end-chevron {
+    transition: none;
+  }
 }
 * {
   box-sizing: border-box;
@@ -1141,9 +1144,57 @@ h1 {
   line-height: 1.55;
 }
 .solved-track-item {
-  display: grid;
-  grid-template-columns: 24px 1fr;
+  display: flex;
+  align-items: baseline;
   gap: 6px;
+}
+/* The play affordance: glyph + number + title/artist, wrapped in a button so
+   the whole line previews the clip. The trailing Apple/Spotify links are a
+   sibling (not nested) so a tap on a link opens the service, not playback. */
+.solved-track-play {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 14px 24px 1fr;
+  gap: 6px;
+  align-items: baseline;
+  background: none;
+  border: none;
+  margin: 0;
+  padding: 1px 2px;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 3px;
+}
+/* Inline SVG play/pause icon (see PlayPauseIcon). currentColor lets the row's
+   hover/playing color rules drive the fill; vertical-align centers it on the
+   first text line, so play and pause — identical boxes — sit the same. */
+.solved-track-glyph {
+  color: rgba(0, 0, 0, 0.5);
+  transition: color var(--ease);
+}
+.solved-track-icon {
+  width: 0.82em;
+  height: 0.82em;
+  fill: currentColor;
+  vertical-align: -0.12em;
+}
+.solved-track-play:hover .solved-track-glyph,
+.solved-track-play:focus-visible .solved-track-glyph,
+.solved-track-play.playing .solved-track-glyph {
+  color: var(--paper-ink);
+}
+.solved-track-play.playing {
+  background: rgba(0, 0, 0, 0.1);
+}
+.solved-track-play:focus-visible {
+  outline: 2px solid rgba(0, 0, 0, 0.5);
+  outline-offset: 1px;
+}
+.solved-track-text {
+  min-width: 0;
 }
 .solved-track-no {
   color: rgba(0, 0, 0, 0.55);
@@ -1165,6 +1216,7 @@ h1 {
    feel like liner-note credits rather than CTAs. */
 .solved-track-links {
   display: inline-flex;
+  flex: 0 0 auto;
   gap: 0; /* dots provide the spacing */
   margin-left: 8px;
   font-size: 0.85em;
@@ -2171,6 +2223,156 @@ h1 {
 }
 .solved-popover-artist {
   color: var(--text-secondary);
+}
+
+/* ----- MobileEndCards — terminal-state accordion (replaces squircles) --- */
+/* Only mounts on a phone once the game is over (see isTerminalMobile in
+   App.tsx). A status header plus one card per group; the open card paints in
+   its theme color and reveals play-able tracks, the rest collapse to a
+   badge + chevron row. The EndPanel j-card still renders below this. */
+.mobile-end {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 940px;
+  margin: 0 auto 12px;
+}
+.mobile-end-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: var(--chrome-bg);
+  border: 1px solid var(--chrome-border);
+}
+.mobile-end-status-light {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--theme-1);
+  box-shadow: 0 0 8px var(--theme-1);
+}
+.mobile-end.loss .mobile-end-status-light {
+  background: #c2553f;
+  box-shadow: 0 0 8px #c2553f;
+}
+.mobile-end-status-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.mobile-end-headline {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+.mobile-end-summary {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  color: var(--text-secondary);
+}
+.mobile-end-day {
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border: 1px solid var(--chrome-border);
+  border-radius: 999px;
+  color: var(--text-secondary);
+}
+.mobile-end-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mobile-end-card {
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--chrome-bg);
+  border: 1px solid var(--chrome-border);
+}
+.mobile-end-card.open.theme-0 { background: var(--theme-0); border-color: rgba(0, 0, 0, 0.35); }
+.mobile-end-card.open.theme-1 { background: var(--theme-1); border-color: rgba(0, 0, 0, 0.35); }
+.mobile-end-card.open.theme-2 { background: var(--theme-2); border-color: rgba(0, 0, 0, 0.35); }
+.mobile-end-card.open.theme-3 { background: var(--theme-3); border-color: rgba(0, 0, 0, 0.35); }
+.mobile-end-card-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  background: none;
+  border: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+.mobile-end-card.open .mobile-end-card-head {
+  color: var(--paper-ink);
+}
+.mobile-end-badge {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--paper-ink);
+}
+.mobile-end-card.theme-0 .mobile-end-badge { background: var(--theme-0); }
+.mobile-end-card.theme-1 .mobile-end-badge { background: var(--theme-1); }
+.mobile-end-card.theme-2 .mobile-end-badge { background: var(--theme-2); }
+.mobile-end-card.theme-3 .mobile-end-badge { background: var(--theme-3); }
+.mobile-end-card.open .mobile-end-badge {
+  background: rgba(0, 0, 0, 0.18);
+  color: var(--paper-ink);
+}
+.mobile-end-theme {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.mobile-end-chevron {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  opacity: 0.7;
+  transition: transform var(--ease);
+}
+.mobile-end-card.open .mobile-end-chevron {
+  transform: rotate(225deg);
+}
+.mobile-end-card-body {
+  padding: 0 12px 12px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--paper-ink);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 /* ----- CueTray (mobile chrome) ----------------------------------------- */

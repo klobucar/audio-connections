@@ -140,4 +140,40 @@ test.describe('Mobile (Pixel 5) layout', () => {
     // squircles — verify the new mobile chrome surface instead.
     await expect(page.getByTestId('solved-squircle-0')).toBeVisible();
   });
+
+  test('terminal state swaps squircles for the MobileEndCards accordion', async ({ page }) => {
+    const themes = groupByTheme(await readTrackIds(page));
+    // Solve all four groups. Mid-game the squircles are the active surface.
+    for (let t = 0; t < 4; t++) {
+      for (const id of themes.get(t)!) {
+        await page.getByTestId(`select-${id}`).tap();
+      }
+      await page.getByTestId('submit-btn').tap();
+    }
+
+    // Now terminal: squircles give way to the card accordion, with the
+    // EndPanel j-card still below it.
+    await expect(page.getByTestId('mobile-end')).toBeVisible();
+    await expect(page.getByTestId('solved-squircle-0')).toHaveCount(0);
+    await expect(page.getByTestId('end-panel')).toBeVisible();
+
+    // The first-solved group's card is open by default; its first track plays.
+    // Scope to the card — the hidden desktop SolvedList also carries play
+    // buttons with the same test ids.
+    const firstCard = page.getByTestId('mobile-end-card-0');
+    const firstHead = page.getByTestId('mobile-end-card-head-0');
+    await expect(firstHead).toHaveAttribute('aria-expanded', 'true');
+    const play = firstCard.getByTestId('solved-play-0');
+    await expect(play).toHaveAttribute('aria-pressed', 'false');
+    await play.tap();
+    await expect(play).toHaveAttribute('aria-pressed', 'true');
+
+    // A collapsed card expands on tap (and the previously-open one stays a
+    // sibling — accordion keeps exactly one open).
+    const secondHead = page.getByTestId('mobile-end-card-head-1');
+    await expect(secondHead).toHaveAttribute('aria-expanded', 'false');
+    await secondHead.tap();
+    await expect(secondHead).toHaveAttribute('aria-expanded', 'true');
+    await expect(firstHead).toHaveAttribute('aria-expanded', 'false');
+  });
 });

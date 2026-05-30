@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Guess, LoadedTrack, Theme } from '../types';
+import { solvedThemeOrder } from './solvedOrder';
 
 /** Layout axis for mobile chrome components — independent of viewport
  *  orientation so each chrome region can pick its preferred axis. */
@@ -32,17 +33,7 @@ export function SolvedBar({ themes, solvedThemes, tracks, guessHistory, orientat
   }, [openIdx]);
 
   // Render solved squircles in the order the player actually found them.
-  const order: number[] = [];
-  for (const g of guessHistory) {
-    if (!g.correct) continue;
-    const themeIdx = g.themes[0];
-    if (themeIdx !== undefined && solvedThemes.has(themeIdx) && !order.includes(themeIdx)) {
-      order.push(themeIdx);
-    }
-  }
-  for (const themeIdx of solvedThemes) {
-    if (!order.includes(themeIdx)) order.push(themeIdx);
-  }
+  const order = solvedThemeOrder(guessHistory, solvedThemes);
 
   if (order.length === 0) return null;
 

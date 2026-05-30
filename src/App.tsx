@@ -13,6 +13,7 @@ import { Countdown } from './components/Countdown';
 import { Grid } from './components/Grid';
 import { SolvedList } from './components/SolvedList';
 import { SolvedBar } from './components/SolvedBar';
+import { MobileEndCards } from './components/MobileEndCards';
 import { MistakesDisplay } from './components/MistakesDisplay';
 import { Controls } from './components/Controls';
 import { CueTray } from './components/CueTray';
@@ -183,6 +184,10 @@ export function App() {
   // row/column axis is parameterized per the PoC handoff — the JSX picks
   // 'horizontal' (portrait) or 'vertical' (landscape) at each call site.
   const hasSolved = session.solvedThemes.size > 0;
+  // Terminal state on a phone: the solved squircles give way to the
+  // MobileEndCards accordion (room for per-track play). Squircles stay during
+  // active play so a group's chip still appears the moment it's solved.
+  const isTerminalMobile = isMobile && session.state.gameOver && !isBroken;
 
   const onDaySwitch = (day: number) => {
     const idx = puzzles.findIndex((p) => p.day === day);
@@ -300,7 +305,7 @@ export function App() {
               onSwitch={onDaySwitch}
             />
             <Countdown puzzles={puzzles} unlockedDays={unlockedDays} onUnlock={onNaturalUnlock} />
-            {!isBroken && (
+            {!isBroken && !isTerminalMobile && (
               <SolvedBar
                 themes={puzzle.themes}
                 solvedThemes={session.solvedThemes}
@@ -338,7 +343,7 @@ export function App() {
           Suppressed entirely on a broken day (no progress to display). */}
       {isMobile && orientation === 'landscape' && !isBroken && (
         <aside className="chrome-left">
-          {hasSolved && (
+          {hasSolved && !isTerminalMobile && (
             <SolvedBar
               themes={puzzle.themes}
               solvedThemes={session.solvedThemes}
@@ -363,7 +368,21 @@ export function App() {
               solvedThemes={session.solvedThemes}
               tracks={session.state.tracks}
               guessHistory={session.state.guessHistory}
+              playingId={audio.playingId}
+              onPlay={audio.togglePlay}
             />
+            {isTerminalMobile && (
+              <MobileEndCards
+                themes={puzzle.themes}
+                solvedThemes={session.solvedThemes}
+                tracks={session.state.tracks}
+                guessHistory={session.state.guessHistory}
+                won={session.won}
+                day={puzzle.day}
+                playingId={audio.playingId}
+                onPlay={audio.togglePlay}
+              />
+            )}
             {session.state.gameOver && (
               <EndPanel
                 won={session.won}
