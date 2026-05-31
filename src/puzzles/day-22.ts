@@ -18,7 +18,7 @@ const puzzle: Puzzle = {
     {
       theme: 'Songs featuring a didgeridoo',
       tracks: [
-        { id: 1744404621, artist: 'Aphex Twin', title: 'Flap Head' },
+        { id: 1744404480, artist: 'Aphex Twin', title: 'Didgeridoo' },
         { id: 344481734, artist: 'Jamiroquai', title: 'When You Gonna Learn?' },
         { id: 1675375195, artist: 'Kate Bush', title: 'The Dreaming' },
         { id: 1056468746, artist: 'Like a Storm', title: 'Love the Way You Hate Me' },
