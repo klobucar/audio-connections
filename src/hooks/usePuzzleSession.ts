@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 import type { LoadedTrack, Guess, Puzzle } from '../types';
-import { MAX_MISTAKES } from '../puzzles';
+import { MAX_MISTAKES, isReleased } from '../puzzles';
 import { fetchTrackInfo, fetchPreviewBlobUrl, type TrackInfo } from '../itunes';
 import { SILENT_WAV } from '../mock-audio';
 import { loadState, saveState, clearState } from '../storage';
@@ -530,7 +530,11 @@ export function usePuzzleSession(puzzle: Puzzle, options: UsePuzzleSessionOption
       // load-fresh / load-restore always carries a clean status.
       const loadStatus = '';
 
-      const persisted = loadState(saveId);
+      // Future (Konami-unlocked) days are ephemeral: never restore a save for
+      // one. None should exist (the persist effect won't write an unreleased
+      // day), but gating here keeps an unreleased day always-fresh and ignores
+      // any stale save left by an older build — symmetric with that gate.
+      const persisted = isReleased(puzzle) ? loadState(saveId) : null;
       const loadedIds = loaded.map((t) => t.id);
       if (persisted && setEqual(persisted.trackOrder, loadedIds)) {
         const byId = new Map(loaded.map((t) => [t.id, t]));
@@ -596,6 +600,11 @@ export function usePuzzleSession(puzzle: Puzzle, options: UsePuzzleSessionOption
         (post-load-reset, pre-load-fresh), we skip entirely. */
   useEffect(() => {
     if (state.day === null) return;
+    // Persist only days released by date. State for a Konami-unlocked future
+    // day is deliberately ephemeral: we don't trust future ordering until a
+    // puzzle ships, so anything played there is discarded rather than saved
+    // under a key a later reshuffle could point at a different puzzle.
+    if (!isReleased(puzzle)) return;
     const solvedThemes = state.themeStates
       .map((s, i) => (s === 'exiting' || s === 'solved' ? i : -1))
       .filter((i) => i !== -1);

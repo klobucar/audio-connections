@@ -14,8 +14,10 @@
     "test:unit": "vitest run",
     "test:itunes": "vitest run --config vitest.itunes.config.ts",
     "test:watch": "vitest",
-    "validate": "npm run typecheck && npm run test:unit && npm run test:itunes",
-    "setup": "npm ci && npx playwright install"
+    "test:past-days": "node scripts/check-past-days.ts",
+    "schedule:preview": "node scripts/schedule-preview.ts",
+    "validate": "npm run typecheck && npm run test:unit && npm run test:itunes && npm run test:past-days",
+    "setup": "npm ci && npx playwright install && git config core.hooksPath .githooks"
   },
   "dependencies": {
     "react": "^18.3.1",

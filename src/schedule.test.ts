@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   LAUNCH_EPOCH,
+  diffPastDays,
   idFromSlug,
+  previewWarnings,
   resolve,
   schedule as liveSchedule,
   type PuzzleContent,
@@ -185,11 +187,20 @@ describe('resolve — golden master (frozen released prefix)', () => {
   });
 });
 
-describe('the live schedule resolves the current catalogue correctly', () => {
+describe('the live schedule resolves the current catalogue', () => {
   // Resolve the REAL schedule against synthetic content (one stub per scheduled
-  // slug) so this pins the schedule's number/date output independent of puzzle
-  // file contents. It is the migration's source of truth for what each file
-  // resolves to.
+  // slug) so these checks pin the schedule's STRUCTURE independent of puzzle
+  // file contents. Every assertion below holds for a schedule of ANY length, so
+  // appending a puzzle needs NO edits here — that is the point. (Counting
+  // entries or freezing a per-row table would force a hand-edit on every add,
+  // and would also wrongly freeze the still-movable unreleased tail.)
+  //
+  // What deliberately is NOT here: a guard that a PAST day wasn't renamed or
+  // renumbered. That question depends on "today" and on the previous schedule,
+  // so it can't live in a pure, deterministic unit test without reading the
+  // wall clock (a self-detonating, unbisectable test). It lives in CI instead,
+  // where reading the clock + diffing against origin/main is legitimate — see
+  // the past-day guard. Here we assert only timeless structural invariants.
   const stub = new Map<string, PuzzleContent>(
     liveSchedule.map((e) => {
       const slug = typeof e === 'string' ? e : e.slug;
@@ -198,55 +209,46 @@ describe('the live schedule resolves the current catalogue correctly', () => {
   );
   const out = resolve(liveSchedule, stub, LAUNCH_EPOCH);
 
-  it('covers all 36 catalogue days, dense 1..36, chronological', () => {
-    expect(out).toHaveLength(36);
+  it('numbers densely 1..N in chronological order', () => {
     out.forEach((p, i) => expect(p.day).toBe(i + 1));
     for (let i = 1; i < out.length; i++) {
       expect(out[i]!.date >= out[i - 1]!.date).toBe(true);
     }
   });
 
-  // Frozen save-key snapshot — the orphaned-saves guard. A puzzle's SAVE KEY is
-  // idFromSlug(slug), and it must NEVER change once players can have saved under
-  // it. Days 1..22 are released `day-N` files whose keys are the bare numbers
-  // '1'..'22' that live saves sit under, so their files must never be renamed.
-  // The reslugged tail (days 23..36) freezes each author slug as its now-
-  // permanent key. Renaming any file, reordering the schedule, or shifting a pin
-  // breaks this table loudly. Columns: [day, slug, saveKey, date].
-  const FROZEN: ReadonlyArray<readonly [number, string, string, string]> = [
-    ...Array.from({ length: 22 }, (_, i): readonly [number, string, string, string] => {
-      const n = i + 1;
-      const date = new Date(Date.UTC(2026, 4, 10) + i * 86_400_000).toISOString().slice(0, 10);
-      return [n, `day-${n}`, String(n), date];
-    }),
-    [23, 'bojanrajkovic-1', 'bojanrajkovic-1', '2026-06-01'],
-    [24, 'klobucar-1', 'klobucar-1', '2026-06-02'],
-    [25, 'farana-1', 'farana-1', '2026-06-03'],
-    [26, 'rob-tetrel-1', 'rob-tetrel-1', '2026-06-04'],
-    [27, 'robchahin-1', 'robchahin-1', '2026-06-05'],
-    [28, 'klobucar-2', 'klobucar-2', '2026-06-06'],
-    [29, 'gitblight1-1', 'gitblight1-1', '2026-06-07'],
-    [30, 'rob-tetrel-2', 'rob-tetrel-2', '2026-06-08'],
-    [31, 'bojanrajkovic-2', 'bojanrajkovic-2', '2026-06-09'],
-    [32, 'klobucar-3', 'klobucar-3', '2026-06-10'],
-    [33, 'farana-2', 'farana-2', '2026-06-11'],
-    [34, 'farana-3', 'farana-3', '2026-06-12'],
-    [35, 'tqbf-1', 'tqbf-1', '2026-06-13'],
-    [36, 'tqbf-2', 'tqbf-2', '2026-06-30'], // held pin → dated last
-  ];
-
-  it('matches the frozen save-key snapshot (day, slug, save key, date)', () => {
-    expect(out.map((p) => [p.day, p.slug, idFromSlug(p.slug), p.date])).toEqual(
-      FROZEN.map((r) => [...r]),
-    );
+  it('assigns every puzzle a unique save key', () => {
+    const keys = out.map((p) => idFromSlug(p.slug));
+    expect(new Set(keys).size).toBe(keys.length);
   });
 
-  it('every released day (1..22) keeps a stable numeric save key', () => {
-    for (const [day, slug] of FROZEN) {
-      if (day <= 22) {
-        expect([slug, idFromSlug(slug)], `released day ${day}`).toEqual([`day-${day}`, String(day)]);
-      }
+  // The orphaned-saves guard for the released back-catalogue. Each legacy
+  // `day-N` file is a puzzle that shipped before the slug migration, so live
+  // players hold saves under the bare numeric key 'N'. That key is
+  // idFromSlug('day-N'), and the puzzle's public number/date are also a matter
+  // of record. So every `day-N` entry MUST resolve to number N, the bare key
+  // 'N', and date epoch+(N-1) — reordering one (or shifting a pin ahead of it)
+  // breaks this loudly. Self-extending: it checks whatever day-N entries exist,
+  // with no count to bump. (A *rename* of a day-N file drops it from this set
+  // rather than failing here; that case is the CI past-day guard's job.)
+  it('freezes every legacy day-N entry to its numeric identity (number, save key, date)', () => {
+    const epochMs = Date.UTC(2026, 4, 10); // 2026-05-10, the launch epoch
+    let checked = 0;
+    for (const p of out) {
+      const m = /^day-(\d+)$/.exec(p.slug);
+      if (!m) continue;
+      const n = Number(m[1]);
+      const date = new Date(epochMs + (n - 1) * 86_400_000).toISOString().slice(0, 10);
+      expect([p.day, p.slug, idFromSlug(p.slug), p.date], `legacy ${p.slug}`).toEqual([
+        n,
+        `day-${n}`,
+        String(n),
+        date,
+      ]);
+      checked++;
     }
+    // Sanity: the released back-catalogue exists and is being checked, so this
+    // test can never silently pass by matching zero entries.
+    expect(checked).toBeGreaterThanOrEqual(22);
   });
 });
 
@@ -267,5 +269,129 @@ describe('idFromSlug', () => {
     expect(idFromSlug('day-1-extra')).toBe('day-1-extra');
     expect(idFromSlug('dayton-3')).toBe('dayton-3');
     expect(idFromSlug('day-')).toBe('day-');
+  });
+});
+
+describe('diffPastDays — released days are frozen, the future is free', () => {
+  // Resolve from a fixed epoch so "released" is decided by `today`, not the
+  // host clock. Epoch 2026-05-10: a..e are 05-10..05-14.
+  const EPOCH = '2026-05-10';
+  const TODAY = '2026-05-12'; // a, b, c are released (<= today); d, e are future.
+
+  it('reports nothing when the schedule is unchanged', () => {
+    const s = run(['a', 'b', 'c', 'd', 'e'], EPOCH);
+    expect(diffPastDays(s, s, TODAY)).toEqual([]);
+  });
+
+  it('reports nothing when a new puzzle is appended (the common case)', () => {
+    const before = run(['a', 'b', 'c', 'd', 'e'], EPOCH);
+    const after = run(['a', 'b', 'c', 'd', 'e', 'f'], EPOCH);
+    expect(diffPastDays(before, after, TODAY)).toEqual([]);
+  });
+
+  it('reports nothing when a future puzzle is reordered or inserted', () => {
+    const before = run(['a', 'b', 'c', 'd', 'e'], EPOCH);
+    // d and e are both future (> today); swapping them is allowed.
+    const after = run(['a', 'b', 'c', 'e', 'd'], EPOCH);
+    expect(diffPastDays(before, after, TODAY)).toEqual([]);
+  });
+
+  it('flags a released day that gets renumbered by a reorder', () => {
+    const before = run(['a', 'b', 'c', 'd', 'e'], EPOCH);
+    const after = run(['b', 'a', 'c', 'd', 'e'], EPOCH); // a and b (both released) swap
+    const v = diffPastDays(before, after, TODAY);
+    expect(v).toEqual([
+      { slug: 'a', before: { day: 1, date: '2026-05-10' }, after: { day: 2, date: '2026-05-11' }, reason: 'redated' },
+      { slug: 'b', before: { day: 2, date: '2026-05-11' }, after: { day: 1, date: '2026-05-10' }, reason: 'redated' },
+    ]);
+  });
+
+  it('flags a released day whose file was renamed (slug vanishes)', () => {
+    const before = run(['a', 'b', 'c', 'd', 'e'], EPOCH);
+    const after = run(['a', 'renamed', 'c', 'd', 'e'], EPOCH); // b → renamed
+    expect(diffPastDays(before, after, TODAY)).toEqual([
+      { slug: 'b', before: { day: 2, date: '2026-05-11' }, after: null, reason: 'removed' },
+    ]);
+  });
+
+  it("freezes TODAY's just-launched puzzle against reordering", () => {
+    // c is dated exactly TODAY — already seen by players, so it must not move,
+    // even though it only released hours ago.
+    const before = run(['a', 'b', 'c', 'd', 'e'], EPOCH);
+    const after = run(['a', 'b', 'd', 'c', 'e'], EPOCH); // c (today) and d (future) swap
+    const v = diffPastDays(before, after, TODAY);
+    expect(v.map((x) => x.slug)).toEqual(['c']); // only c is past; d was future
+    expect(v[0]!.reason).toBe('redated');
+  });
+
+  it('distinguishes a pure renumber from a redate', () => {
+    // Two puzzles pinned to one day (two-per-day): swapping their list order
+    // keeps both dates but flips their numbers — a renumber, not a redate.
+    const before = run(
+      [{ slug: 'a', date: '2026-05-10' }, { slug: 'b', date: '2026-05-10' }],
+      EPOCH,
+    );
+    const after = run(
+      [{ slug: 'b', date: '2026-05-10' }, { slug: 'a', date: '2026-05-10' }],
+      EPOCH,
+    );
+    const v = diffPastDays(before, after, '2026-05-10');
+    expect(v.map((x) => [x.slug, x.reason])).toEqual([
+      ['a', 'renumbered'],
+      ['b', 'renumbered'],
+    ]);
+  });
+
+  it('rejects a malformed today', () => {
+    const s = run(['a'], EPOCH);
+    expect(() => diffPastDays(s, s, '2026/05/12')).toThrow(/Invalid "today"/);
+  });
+});
+
+describe('previewWarnings', () => {
+  const EPOCH = '2026-05-10';
+
+  it('is quiet for a healthy schedule with ample runway and no gaps', () => {
+    // 8 contiguous days from epoch; today is day 1, so 7 are in the future.
+    const s = run(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'], EPOCH);
+    expect(previewWarnings(s, '2026-05-10', { runway: 5 })).toEqual([]);
+  });
+
+  it('warns when the runway is thin', () => {
+    const s = run(['a', 'b', 'c', 'd', 'e'], EPOCH); // 05-10..05-14
+    // today = 05-12 → future = d(13), e(14) = 2 < 5.
+    const w = previewWarnings(s, '2026-05-12', { runway: 5 });
+    expect(w.map((x) => x.kind)).toContain('thin-runway');
+    expect(w.find((x) => x.kind === 'thin-runway')!.message).toMatch(/2 future puzzle/);
+  });
+
+  it('flags a forward gap but not a historical one', () => {
+    // a=05-10, b=05-11, then a pinned jump to 05-20 (8 empty days), then c.
+    const s = run(['a', 'b', { slug: 'far', date: '2026-05-20' }], EPOCH);
+    // today = 05-10: the 05-11→05-20 gap is in the future → flagged.
+    const future = previewWarnings(s, '2026-05-10', { runway: 1, gapDays: 2 });
+    expect(future.filter((x) => x.kind === 'gap')).toHaveLength(1);
+    expect(future.find((x) => x.kind === 'gap')!.message).toMatch(/8 empty day/);
+    // today = 05-25: the whole gap is in the past → not flagged.
+    const past = previewWarnings(s, '2026-05-25', { runway: 0, gapDays: 2 });
+    expect(past.filter((x) => x.kind === 'gap')).toHaveLength(0);
+  });
+
+  it('does not flag a single-day-apart contiguous run as a gap', () => {
+    const s = run(['a', 'b', 'c'], EPOCH);
+    const w = previewWarnings(s, '2026-05-10', { runway: 1, gapDays: 2 });
+    expect(w.filter((x) => x.kind === 'gap')).toHaveLength(0);
+  });
+
+  it('flags a run-dry queue whose last puzzle is in the past', () => {
+    const s = run(['a', 'b', 'c'], EPOCH); // last = 05-12
+    const w = previewWarnings(s, '2026-05-20', { runway: 0 });
+    expect(w.map((x) => x.kind)).toContain('past-unreleased');
+    expect(w.find((x) => x.kind === 'past-unreleased')!.message).toMatch(/run dry/);
+  });
+
+  it('rejects a malformed today', () => {
+    const s = run(['a'], EPOCH);
+    expect(() => previewWarnings(s, 'nope')).toThrow(/Invalid "today"/);
   });
 });

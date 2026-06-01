@@ -13,15 +13,19 @@ For puzzle submissions, see [PUZZLE_AUTHORS.md](./PUZZLE_AUTHORS.md). This doc i
 ## Local commands
 
 ```
-npm run setup          One-time install. Runs `npm ci` then `npx playwright install`.
+npm run setup          One-time install. Runs `npm ci`, `npx playwright install`, and points git at `.githooks/`.
 npm run dev            Run the dev server (Vite, http://localhost:5173).
 npm run build          Typecheck + production build.
 npm run typecheck      TypeScript check only, no build.
 npm run test:unit      Vitest, offline. ~10s. Pure logic + puzzle data shape.
 npm run test:itunes    Vitest with the iTunes config. ~10-20s. Hits the iTunes API.
 npm test               Playwright end-to-end. ~30-60s. Boots dev server, drives Chromium.
-npm run validate       Composite for puzzle authors: npm run typecheck + test:unit + test:itunes.
+npm run validate       Composite for puzzle authors: npm run typecheck + test:unit + test:itunes + test:past-days.
+npm run test:past-days Fails if you moved an already-released puzzle (reorder/rename/re-date). Diffs against origin/main.
+npm run schedule:preview  Print the resolved schedule (day → slug → date) plus warnings (thin runway, calendar gaps). Read-only.
 ```
+
+`npm run setup` also points git at the committed `.githooks/` directory, installing a pre-commit hook that runs `test:past-days` when you stage `src/schedule.ts` or a puzzle file. It's a best-effort local mirror of CI — bypass a false alarm with `git commit --no-verify`.
 
 `npm run setup` exists because `.npmrc` sets `ignore-scripts=true` — every package's lifecycle scripts (preinstall / install / postinstall) are blocked on `npm ci` and `npm install`. That closes the primary npm supply-chain attack vector. The one package in our tree that legitimately needs a postinstall is Playwright (downloads browser binaries); `npm run setup` does that explicit step after the install. If you ever add a dep that genuinely needs an install hook, wire it into the `setup` script too rather than relaxing the .npmrc.
 
@@ -42,6 +46,7 @@ Files are routed to a runner by filename suffix and directory; see `vitest.confi
 | Trigger | Runs |
 |---|---|
 | PR opened that touches a puzzle file (`src/puzzles/*.ts` except `template.ts`) | `test:unit` + `test:itunes` (after maintainer approves the environment gate) |
+| PR opened that touches `src/schedule.ts` or any puzzle file | Past-day guard (`test:past-days`) — fails if an already-released day was reordered, renamed, or re-dated |
 | PR opened that touches anything else | Nothing automated |
 | Push to `main` | `test:unit` + Playwright + build + deploy |
 | Push to `main` touching a puzzle file (`src/puzzles/*.ts` except `template.ts`) | Above + `test:itunes` post-merge sweep |

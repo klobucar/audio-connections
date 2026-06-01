@@ -1,0 +1,15 @@
+#!/bin/sh
+# Past-day guard — best-effort local mirror of .github/workflows/past-day-guard.yml.
+# CI is authoritative; this just catches a moved-released-day before you push.
+#
+# Installed by `npm run setup` (sets core.hooksPath to .githooks). Only runs
+# when the schedule or a puzzle file is staged, matching the CI path filter.
+# Bypass a false alarm with `git commit --no-verify`.
+if git diff --cached --name-only | grep -qE '^src/schedule\.ts$|^src/puzzles/'; then
+  echo "pre-commit: checking no released day moved…"
+  if ! npm run --silent test:past-days; then
+    echo "pre-commit: past-day guard failed (see above). Commit aborted."
+    echo "If this is intentional, re-run with: git commit --no-verify"
+    exit 1
+  fi
+fi
