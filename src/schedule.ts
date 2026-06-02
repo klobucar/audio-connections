@@ -191,6 +191,7 @@ export const schedule: ScheduleEntry[] = [
   'farana-2', 'farana-3', 'tqbf-1',
   'bojanrajkovic-3',
   { slug: 'tqbf-2', date: '2026-06-30' }, // held date — de-tangles the tail
+  { slug: 'bojanrajkovic-4', date: '2026-07-14' }, // held date (author request)
 ];
 
 /** Save-key identity from a slug. A legacy `day-N` slug collapses to the bare
