@@ -189,6 +189,7 @@ export const schedule: ScheduleEntry[] = [
   'bojanrajkovic-1', 'klobucar-1', 'farana-1', 'rob-tetrel-1', 'robchahin-1',
   'klobucar-2', 'gitblight1-1', 'rob-tetrel-2', 'bojanrajkovic-2', 'klobucar-3',
   'farana-2', 'farana-3', 'tqbf-1',
+  'bojanrajkovic-3',
   { slug: 'tqbf-2', date: '2026-06-30' }, // held date — de-tangles the tail
 ];
 
