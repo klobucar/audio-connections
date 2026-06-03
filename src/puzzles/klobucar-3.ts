@@ -17,7 +17,7 @@ const puzzle: PuzzleContent = {
       tracks: [
         { id: 1590332409, artist: 'The New Pornographers', title: 'Sing Me Spanish Techno' },
         { id: 181630629, artist: 'Cake', title: 'Opera Singer' },
-        { id: 1455885774, artist: 'Gene Kelly', title: "Singin' in the Rain" },
+        { id: 1196295123, artist: 'Alan Walker', title: "Sing Me to Sleep" },
         { id: 1440656636, artist: 'The Moody Blues', title: "I'm Just a Singer (In a Rock and Roll Band)" },
       ],
     },
