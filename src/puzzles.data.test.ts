@@ -34,6 +34,33 @@ describe('every puzzle has the required shape', () => {
       }
     }
   });
+
+  it.each(puzzleFiles)('$label — no duplicate track ids, songs, or category labels', ({ content: p }) => {
+    const seenIds = new Map<number, string>();
+    const seenSongs = new Map<string, string>();
+    const seenThemes = new Set<string>();
+
+    for (const [i, theme] of p.themes.entries()) {
+      const themeKey = theme.theme.trim().toLocaleLowerCase();
+      expect(seenThemes.has(themeKey), `theme ${i}: duplicate category "${theme.theme}"`).toBe(false);
+      seenThemes.add(themeKey);
+
+      for (const [j, track] of theme.tracks.entries()) {
+        const loc = `theme ${i} track ${j}`;
+        const previousId = seenIds.get(track.id);
+        expect(previousId, `${loc}: duplicate iTunes id ${track.id} also used at ${previousId}`).toBeUndefined();
+        seenIds.set(track.id, loc);
+
+        const songKey = `${track.artist.trim().toLocaleLowerCase()}\n${track.title.trim().toLocaleLowerCase()}`;
+        const previousSong = seenSongs.get(songKey);
+        expect(
+          previousSong,
+          `${loc}: duplicate artist/title "${track.artist} — ${track.title}" also used at ${previousSong}`,
+        ).toBeUndefined();
+        seenSongs.set(songKey, loc);
+      }
+    }
+  });
 });
 
 describe('puzzle calendar', () => {
