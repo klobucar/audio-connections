@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildShareText } from './EndPanel';
+import { buildShareText } from './shareText';
 import type { Guess } from '../types';
 
 // buildShareText turns the guess history into the shareable emoji grid. The

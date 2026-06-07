@@ -47,6 +47,7 @@ export function findProximityWarnings(
   idsBySlug: ReadonlyMap<string, readonly number[]>,
   dates: ReadonlyMap<string, { day: number; date: string }>,
   warnDays: number,
+  today?: string,
 ): ProximityWarning[] {
   const byId = new Map<number, IdOccurrence[]>();
   for (const [slug, ids] of idsBySlug) {
@@ -69,7 +70,11 @@ export function findProximityWarnings(
       const gap = Math.round(
         (new Date(cur.date).getTime() - new Date(prev.date).getTime()) / 86_400_000,
       );
-      if (gap < warnDays) warnings.push({ id, prev, cur, gap });
+      // If the later occurrence has already released (including today's
+      // puzzle), both sides of this pair are historical. Past schedule
+      // positions are frozen, so warning here is noise; keep warning only when
+      // the later occurrence is still future-dated and actionable.
+      if (gap < warnDays && (!today || cur.date > today)) warnings.push({ id, prev, cur, gap });
     }
   }
   return warnings;

@@ -48,6 +48,32 @@ describe('findProximityWarnings', () => {
     expect(w).toHaveLength(0);
   });
 
+  it('stays quiet when the later duplicate is already released', () => {
+    const w = findProximityWarnings(
+      new Map([
+        ['a-1', [100]],
+        ['a-2', [100]],
+      ]),
+      dates,
+      14,
+      '2026-05-11',
+    );
+    expect(w).toHaveLength(0);
+  });
+
+  it('still warns when the later duplicate is future-dated', () => {
+    const w = findProximityWarnings(
+      new Map([
+        ['a-1', [100]],
+        ['a-2', [100]],
+      ]),
+      dates,
+      14,
+      '2026-05-10',
+    );
+    expect(w).toHaveLength(1);
+  });
+
   it('ignores files with no scheduled date (not live)', () => {
     const w = findProximityWarnings(
       new Map([
