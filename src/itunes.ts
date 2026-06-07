@@ -1,5 +1,5 @@
 interface ITunesLookupResult {
-  results: Array<{ previewUrl?: string; trackViewUrl?: string }>;
+  results: Array<{ trackId?: number; previewUrl?: string; trackViewUrl?: string }>;
 }
 
 /** Subset of fields we keep from iTunes' /lookup response. `trackViewUrl`
@@ -16,9 +16,10 @@ function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-function jsonpLookup(itunesId: number, timeoutMs = 10_000): Promise<ITunesLookupResult['results'][number] | null> {
+function jsonpLookupIds(itunesIds: ReadonlyArray<number>, timeoutMs = 10_000): Promise<ITunesLookupResult['results']> {
   return new Promise((resolve, reject) => {
-    const callbackName = `__itunes_cb_${itunesId}_${Math.random().toString(36).slice(2)}`;
+    const idsLabel = itunesIds.join(',');
+    const callbackName = `__itunes_cb_${itunesIds.join('_')}_${Math.random().toString(36).slice(2)}`;
     const script = document.createElement('script');
     // Narrow the JSONP callback slot locally instead of widening Window
     // globally. The only thing we put on `window` is this one callback
@@ -32,19 +33,23 @@ function jsonpLookup(itunesId: number, timeoutMs = 10_000): Promise<ITunesLookup
     };
     callbackHost[callbackName] = (data: ITunesLookupResult) => {
       cleanup();
-      resolve(data.results[0] ?? null);
+      resolve(data.results);
     };
     script.onerror = () => {
       cleanup();
-      reject(new Error(`JSONP load failed for ${itunesId}`));
+      reject(new Error(`JSONP load failed for ${idsLabel}`));
     };
     timer = setTimeout(() => {
       cleanup();
-      reject(new Error(`JSONP timeout for ${itunesId}`));
+      reject(new Error(`JSONP timeout for ${idsLabel}`));
     }, timeoutMs);
-    script.src = `https://itunes.apple.com/lookup?id=${itunesId}&callback=${callbackName}`;
+    script.src = `https://itunes.apple.com/lookup?id=${idsLabel}&callback=${encodeURIComponent(callbackName)}`;
     document.head.appendChild(script);
   });
+}
+
+function jsonpLookup(itunesId: number, timeoutMs = 10_000): Promise<ITunesLookupResult['results'][number] | null> {
+  return jsonpLookupIds([itunesId], timeoutMs).then((results) => results[0] ?? null);
 }
 
 /** Exponential backoff (capped at 10s) before the Nth retry of a lookup. */
@@ -71,6 +76,21 @@ export async function fetchTrackInfo(itunesId: number, attempt = 1): Promise<Tra
     console.warn(`Failed to fetch ID ${itunesId} after ${attempt} attempts:`, e);
     return null;
   }
+}
+
+/** Batch lookup for a puzzle's metadata. Missing IDs are deliberately silent:
+ *  the session retries those with fetchTrackInfo(), which logs by iTunes ID if
+ *  they still fail individually. */
+export async function fetchTrackInfoBatch(itunesIds: ReadonlyArray<number>): Promise<Map<number, TrackInfo>> {
+  const results = await jsonpLookupIds(itunesIds);
+  const out = new Map<number, TrackInfo>();
+  for (const result of results) {
+    if (typeof result.trackId !== 'number' || !result.previewUrl) continue;
+    const info: TrackInfo = { previewUrl: result.previewUrl };
+    if (result.trackViewUrl) info.trackViewUrl = result.trackViewUrl;
+    out.set(result.trackId, info);
+  }
+  return out;
 }
 
 /** Fetch the .m4a preview into a Blob and return a blob: URL the caller

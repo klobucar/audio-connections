@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 import type { LoadedTrack, Guess, Puzzle } from '../types';
 import { MAX_MISTAKES, isReleased } from '../puzzles';
-import { fetchTrackInfo, fetchPreviewBlobUrl, type TrackInfo } from '../itunes';
+import { fetchTrackInfo, fetchTrackInfoBatch, fetchPreviewBlobUrl, sleep, type TrackInfo } from '../itunes';
 import { SILENT_WAV } from '../mock-audio';
 import { loadState, saveState, clearState } from '../storage';
 import type { PersistedGameState } from '../storage';
@@ -29,6 +29,70 @@ function setEqual(a: ReadonlyArray<number>, b: ReadonlyArray<number>): boolean {
 
 function signature(ids: number[]): string {
   return [...ids].sort((a, b) => a - b).join(',');
+}
+
+const MISSING_PREVIEW_RETRY_DELAY_MS = 2_000;
+
+type TrackInfoLookup = (itunesId: number) => Promise<TrackInfo | null>;
+type TrackInfoBatchLookup = (itunesIds: ReadonlyArray<number>) => Promise<Map<number, TrackInfo>>;
+
+interface TrackInfoLoadOptions {
+  batchLookup?: TrackInfoBatchLookup;
+  lookup?: TrackInfoLookup;
+  wait?: (ms: number) => Promise<void>;
+  retryDelayMs?: number;
+  isStale?: () => boolean;
+  onStatus?: (status: string) => void;
+}
+
+/** Load every track's iTunes metadata in one batched lookup, then give
+ *  transient missing-preview failures one grace retry via individual lookups
+ *  before the caller marks the day broken. Returns null only when the owning
+ *  load generation went stale. */
+export async function loadTrackInfosWithRetry(
+  tracks: ReadonlyArray<{ id: number }>,
+  options: TrackInfoLoadOptions = {},
+): Promise<(TrackInfo | null)[] | null> {
+  const batchLookup = options.batchLookup ?? fetchTrackInfoBatch;
+  const lookup = options.lookup ?? fetchTrackInfo;
+  const wait = options.wait ?? sleep;
+  const retryDelayMs = options.retryDelayMs ?? MISSING_PREVIEW_RETRY_DELAY_MS;
+  const isStale = options.isStale ?? (() => false);
+  const trackInfos: (TrackInfo | null)[] = new Array(tracks.length).fill(null);
+
+  try {
+    const infosById = await batchLookup(tracks.map((t) => t.id));
+    if (isStale()) return null;
+    for (let i = 0; i < tracks.length; i++) {
+      trackInfos[i] = infosById.get(tracks[i]!.id) ?? null;
+    }
+    options.onStatus?.(`Loading previews… (${tracks.length}/${tracks.length})`);
+  } catch {
+    // Leave everything missing; the individual retry below owns ID-specific
+    // logging for anything that still can't produce a preview URL.
+  }
+  if (isStale()) return null;
+
+  const failed = trackInfos
+    .map((info, i) => (info === null ? i : -1))
+    .filter((i) => i !== -1);
+
+  if (failed.length > 0) {
+    options.onStatus?.(`Retrying missing previews… (${failed.length}/${tracks.length})`);
+    await wait(retryDelayMs);
+    if (isStale()) return null;
+
+    await Promise.all(
+      failed.map(async (i) => {
+        const info = await lookup(tracks[i]!.id);
+        if (isStale()) return;
+        trackInfos[i] = info;
+      }),
+    );
+    if (isStale()) return null;
+  }
+
+  return trackInfos;
 }
 
 export interface GuessClassification {
@@ -412,39 +476,21 @@ export function usePuzzleSession(puzzle: Puzzle, options: UsePuzzleSessionOption
       // worker-spawn + wasm-instantiate latency once blobs start landing.
       void rgPromise?.then((m) => m?.warmUp());
 
-      const trackInfos: (TrackInfo | null)[] = new Array(all.length).fill(null);
+      let trackInfos: (TrackInfo | null)[] | null;
       if (mock) {
+        trackInfos = new Array(all.length).fill(null);
         for (let i = 0; i < all.length; i++) trackInfos[i] = { previewUrl: SILENT_WAV };
       } else {
-        // Run iTunes Search lookups with a small concurrency cap rather than
-        // strictly serial. Phase 1 dominates cold-load time (~200-400ms per
-        // lookup × 16), while phase 2's CDN fetches are fast and already
-        // parallel. Cap is conservative — 4 in flight keeps us well clear of
-        // any sane per-IP limit, and fetchTrackInfo already does 6-step
-        // exponential backoff on failure if we do trip one.
-        let nextIdx = 0;
-        let completed = 0;
-        const CONCURRENCY = 4;
-        const worker = async () => {
-          while (true) {
-            const i = nextIdx++;
-            if (i >= all.length) return;
-            if (myGen !== loadGenRef.current) return;
-            const info = await fetchTrackInfo(all[i]!.id);
-            if (myGen !== loadGenRef.current) return;
-            trackInfos[i] = info;
-            completed += 1;
-            dispatch({
-              type: 'load-status',
-              status: `Loading previews… (${completed}/${all.length})`,
-            });
-          }
-        };
-        await Promise.all(
-          Array.from({ length: Math.min(CONCURRENCY, all.length) }, worker),
-        );
+        // Phase 1 metadata is a single batched iTunes JSONP lookup. If any
+        // track is missing from that batch, wait briefly and retry only those
+        // IDs individually before declaring the day broken — the hardfail path
+        // needs a real missing preview URL, not a one-off lookup wobble.
+        trackInfos = await loadTrackInfosWithRetry(all, {
+          isStale: () => myGen !== loadGenRef.current,
+          onStatus: (status) => dispatch({ type: 'load-status', status }),
+        });
       }
-      if (myGen !== loadGenRef.current) return;
+      if (myGen !== loadGenRef.current || !trackInfos) return;
 
       /* If any preview failed to resolve, the puzzle is unplayable — bail
        *  before phase 2 (no point prefetching blobs we can't use) and put

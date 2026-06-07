@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { classifyGuess, initialSession, reducer, shuffle } from './usePuzzleSession';
+import { classifyGuess, initialSession, loadTrackInfosWithRetry, reducer, shuffle } from './usePuzzleSession';
 import type { Action, SessionState, ThemeState } from './usePuzzleSession';
 import type { LoadedTrack } from '../types';
 import type { PersistedGameState } from '../storage';
+import type { TrackInfo } from '../itunes';
 
 // The reducer is a pure (state, action) => state state machine — the rules
 // that game.spec.ts only reaches by clicking through a real browser. Driving
@@ -94,6 +95,118 @@ describe('loading actions', () => {
     expect(s.notes.get(3)).toBe('a slow fade-in');
     expect(s.mistakes).toBe(2);
     expect(s.guessSignatures.has('0,1,2,3')).toBe(true);
+  });
+});
+
+describe('loadTrackInfosWithRetry', () => {
+  it('loads metadata in one batch and retries only missing previews individually after a delay', async () => {
+    const batchCalls: number[][] = [];
+    const individualCalls: number[] = [];
+    const waits: number[] = [];
+    const statuses: string[] = [];
+
+    const lookup = async (id: number): Promise<TrackInfo | null> => {
+      individualCalls.push(id);
+      return { previewUrl: `preview:${id}` };
+    };
+
+    const infos = await loadTrackInfosWithRetry(
+      [{ id: 1 }, { id: 2 }, { id: 3 }],
+      {
+        batchLookup: async (ids) => {
+          batchCalls.push([...ids]);
+          return new Map([
+            [1, { previewUrl: 'preview:1' }],
+            [3, { previewUrl: 'preview:3' }],
+          ]);
+        },
+        lookup,
+        wait: async (ms) => {
+          waits.push(ms);
+        },
+        retryDelayMs: 2_000,
+        onStatus: (status) => statuses.push(status),
+      },
+    );
+
+    expect(batchCalls).toEqual([[1, 2, 3]]);
+    expect(individualCalls).toEqual([2]);
+    expect(waits).toEqual([2_000]);
+    expect(infos).toEqual([
+      { previewUrl: 'preview:1' },
+      { previewUrl: 'preview:2' },
+      { previewUrl: 'preview:3' },
+    ]);
+    expect(statuses).toContain('Retrying missing previews… (1/3)');
+  });
+
+  it('does not wait or retry when every lookup returns a preview', async () => {
+    const batchCalls: number[][] = [];
+    const individualCalls: number[] = [];
+    const waits: number[] = [];
+
+    const infos = await loadTrackInfosWithRetry(
+      [{ id: 5 }, { id: 6 }],
+      {
+        batchLookup: async (ids) => {
+          batchCalls.push([...ids]);
+          return new Map([
+            [5, { previewUrl: 'preview:5' }],
+            [6, { previewUrl: 'preview:6' }],
+          ]);
+        },
+        lookup: async (id) => {
+          individualCalls.push(id);
+          return { previewUrl: `preview:${id}` };
+        },
+        wait: async (ms) => {
+          waits.push(ms);
+        },
+      },
+    );
+
+    expect(batchCalls).toEqual([[5, 6]]);
+    expect(individualCalls).toEqual([]);
+    expect(waits).toEqual([]);
+    expect(infos?.map((info) => info?.previewUrl)).toEqual(['preview:5', 'preview:6']);
+  });
+
+  it('retries every ID individually when the batch lookup fails', async () => {
+    const individualCalls: number[] = [];
+
+    const infos = await loadTrackInfosWithRetry(
+      [{ id: 7 }, { id: 8 }],
+      {
+        batchLookup: async () => {
+          throw new Error('batch failed');
+        },
+        lookup: async (id) => {
+          individualCalls.push(id);
+          return { previewUrl: `preview:${id}` };
+        },
+        wait: async () => {},
+      },
+    );
+
+    expect(individualCalls).toEqual([7, 8]);
+    expect(infos?.map((info) => info?.previewUrl)).toEqual(['preview:7', 'preview:8']);
+  });
+
+  it('returns null when the owning load generation goes stale', async () => {
+    let stale = false;
+
+    const infos = await loadTrackInfosWithRetry(
+      [{ id: 1 }],
+      {
+        batchLookup: async () => {
+          stale = true;
+          return new Map([[1, { previewUrl: 'preview:1' }]]);
+        },
+        isStale: () => stale,
+      },
+    );
+
+    expect(infos).toBeNull();
   });
 });
 
