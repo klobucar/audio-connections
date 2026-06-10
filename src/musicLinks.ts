@@ -16,7 +16,10 @@ export function appleMusicUrl(trackId: number, trackViewUrl?: string): string {
   // track on landing. The `/song/<trackId>` shortcut redirects to a song
   // view sometimes and a non-highlighted album page other times, depending
   // on the storefront and whether the track is from a single vs. album.
-  if (trackViewUrl) return trackViewUrl;
+  // Scheme check because this lands in an <a href>: itunes.ts already
+  // filters lookup responses, but this is the last line of defense for a
+  // URL that arrived some other way (e.g. an edited save).
+  if (trackViewUrl?.startsWith('https://')) return trackViewUrl;
   return `https://music.apple.com/song/${trackId}`;
 }
 
