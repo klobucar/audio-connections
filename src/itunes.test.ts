@@ -24,7 +24,7 @@ describe('fetchTrackInfoBatch', () => {
     const out = await fetchTrackInfoBatch([1, 2]);
 
     const url = fetchMock.mock.calls[0]![0] as string;
-    expect(url).toBe('https://itunes.apple.com/lookup?id=1,2');
+    expect(url).toMatch(/^https:\/\/itunes\.apple\.com\/lookup\?id=1,2&_o=/);
     expect(url).not.toContain('callback');
     expect(out.get(1)).toEqual({
       previewUrl: 'https://audio-ssl.itunes.apple.com/a.m4a',
