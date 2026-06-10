@@ -342,9 +342,12 @@ describe('wrong guesses', () => {
 });
 
 describe('reset-puzzle', () => {
-  it('clears all progress but keeps the day attached', () => {
+  it('clears all progress but keeps the day and save identity attached', () => {
     const dirty: SessionState = {
       ...freshSession(),
+      // Slug id (not String(day)) so this fails if reset drops the id and the
+      // persist effect falls back to keying saves by day number.
+      id: 'author-1',
       mistakes: 2,
       selected: new Set([1, 2]),
       themeStates: ['solved', 'unsolved', 'unsolved', 'unsolved'],
@@ -352,6 +355,7 @@ describe('reset-puzzle', () => {
     };
     const s = reducer(dirty, { type: 'reset-puzzle', tracks: tracks() });
     expect(s.day).toBe(1);
+    expect(s.id).toBe('author-1');
     expect(s.mistakes).toBe(0);
     expect(s.selected.size).toBe(0);
     expect(s.themeStates.every((t) => t === 'unsolved')).toBe(true);

@@ -383,6 +383,7 @@ export function reducer(state: SessionState, action: Action): SessionState {
       return {
         ...initialSession(state.themeStates.length, ''),
         day: state.day,
+        id: state.id,
         tracks: action.tracks,
       };
   }
