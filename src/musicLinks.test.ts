@@ -11,6 +11,15 @@ describe('appleMusicUrl', () => {
   it('falls back to /song/<id> shortcut when trackViewUrl is absent', () => {
     expect(appleMusicUrl(580708180)).toBe('https://music.apple.com/song/580708180');
   });
+
+  it('rejects a non-https trackViewUrl — it goes straight into an <a href>', () => {
+    expect(appleMusicUrl(580708180, 'javascript:alert(1)')).toBe(
+      'https://music.apple.com/song/580708180',
+    );
+    expect(appleMusicUrl(580708180, 'http://music.apple.com/song/580708180')).toBe(
+      'https://music.apple.com/song/580708180',
+    );
+  });
 });
 
 describe('spotifyUrl', () => {

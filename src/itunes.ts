@@ -16,40 +16,31 @@ function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-function jsonpLookupIds(itunesIds: ReadonlyArray<number>, timeoutMs = 10_000): Promise<ITunesLookupResult['results']> {
-  return new Promise((resolve, reject) => {
-    const idsLabel = itunesIds.join(',');
-    const callbackName = `__itunes_cb_${itunesIds.join('_')}_${Math.random().toString(36).slice(2)}`;
-    const script = document.createElement('script');
-    // Narrow the JSONP callback slot locally instead of widening Window
-    // globally. The only thing we put on `window` is this one callback
-    // per request; everything else stays strictly typed.
-    const callbackHost = window as unknown as Record<string, unknown>;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const cleanup = () => {
-      delete callbackHost[callbackName];
-      script.remove();
-      if (timer) clearTimeout(timer);
-    };
-    callbackHost[callbackName] = (data: ITunesLookupResult) => {
-      cleanup();
-      resolve(data.results);
-    };
-    script.onerror = () => {
-      cleanup();
-      reject(new Error(`JSONP load failed for ${idsLabel}`));
-    };
-    timer = setTimeout(() => {
-      cleanup();
-      reject(new Error(`JSONP timeout for ${idsLabel}`));
-    }, timeoutMs);
-    script.src = `https://itunes.apple.com/lookup?id=${idsLabel}&callback=${encodeURIComponent(callbackName)}`;
-    document.head.appendChild(script);
+/** Plain CORS fetch against /lookup. This used to be JSONP, which handed
+ *  itunes.apple.com first-party script execution; the endpoint serves
+ *  Access-Control-Allow-Origin nowadays, so fetch confines Apple's response
+ *  to data. (The body arrives as text/javascript but is plain JSON without
+ *  the callback param — .json() doesn't care about the content-type.) */
+async function lookupIds(itunesIds: ReadonlyArray<number>, timeoutMs = 10_000): Promise<ITunesLookupResult['results']> {
+  const idsLabel = itunesIds.join(',');
+  const r = await fetch(`https://itunes.apple.com/lookup?id=${idsLabel}`, {
+    signal: AbortSignal.timeout(timeoutMs),
   });
+  if (!r.ok) throw new Error(`iTunes lookup failed for ${idsLabel}: HTTP ${r.status}`);
+  const data = (await r.json()) as ITunesLookupResult;
+  if (!Array.isArray(data.results)) throw new Error(`iTunes lookup returned no results array for ${idsLabel}`);
+  return data.results;
 }
 
-function jsonpLookup(itunesId: number, timeoutMs = 10_000): Promise<ITunesLookupResult['results'][number] | null> {
-  return jsonpLookupIds([itunesId], timeoutMs).then((results) => results[0] ?? null);
+function lookupId(itunesId: number, timeoutMs = 10_000): Promise<ITunesLookupResult['results'][number] | null> {
+  return lookupIds([itunesId], timeoutMs).then((results) => results[0] ?? null);
+}
+
+/** Accept only https URLs from the lookup response. previewUrl is fetched and
+ *  fed to <audio>, trackViewUrl becomes an <a href> — neither should ever be
+ *  another scheme, so anything else is treated as absent. */
+function httpsOnly(url: string | undefined): string | undefined {
+  return url?.startsWith('https://') ? url : undefined;
 }
 
 /** Exponential backoff (capped at 10s) before the Nth retry of a lookup. */
@@ -60,13 +51,15 @@ export function backoffDelayMs(attempt: number): number {
 export async function fetchTrackInfo(itunesId: number, attempt = 1): Promise<TrackInfo | null> {
   const MAX_ATTEMPTS = 6;
   try {
-    const result = await jsonpLookup(itunesId);
-    if (!result?.previewUrl) {
+    const result = await lookupId(itunesId);
+    const previewUrl = httpsOnly(result?.previewUrl);
+    if (!previewUrl) {
       console.warn(`No preview for ID ${itunesId}`);
       return null;
     }
-    const info: TrackInfo = { previewUrl: result.previewUrl };
-    if (result.trackViewUrl) info.trackViewUrl = result.trackViewUrl;
+    const info: TrackInfo = { previewUrl };
+    const trackViewUrl = httpsOnly(result?.trackViewUrl);
+    if (trackViewUrl) info.trackViewUrl = trackViewUrl;
     return info;
   } catch (e) {
     if (attempt < MAX_ATTEMPTS) {
@@ -82,12 +75,14 @@ export async function fetchTrackInfo(itunesId: number, attempt = 1): Promise<Tra
  *  the session retries those with fetchTrackInfo(), which logs by iTunes ID if
  *  they still fail individually. */
 export async function fetchTrackInfoBatch(itunesIds: ReadonlyArray<number>): Promise<Map<number, TrackInfo>> {
-  const results = await jsonpLookupIds(itunesIds);
+  const results = await lookupIds(itunesIds);
   const out = new Map<number, TrackInfo>();
   for (const result of results) {
-    if (typeof result.trackId !== 'number' || !result.previewUrl) continue;
-    const info: TrackInfo = { previewUrl: result.previewUrl };
-    if (result.trackViewUrl) info.trackViewUrl = result.trackViewUrl;
+    const previewUrl = httpsOnly(result.previewUrl);
+    if (typeof result.trackId !== 'number' || !previewUrl) continue;
+    const info: TrackInfo = { previewUrl };
+    const trackViewUrl = httpsOnly(result.trackViewUrl);
+    if (trackViewUrl) info.trackViewUrl = trackViewUrl;
     out.set(result.trackId, info);
   }
   return out;
