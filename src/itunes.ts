@@ -20,10 +20,18 @@ function sleep(ms: number): Promise<void> {
  *  itunes.apple.com first-party script execution; the endpoint serves
  *  Access-Control-Allow-Origin nowadays, so fetch confines Apple's response
  *  to data. (The body arrives as text/javascript but is plain JSON without
- *  the callback param — .json() doesn't care about the content-type.) */
+ *  the callback param — .json() doesn't care about the content-type.)
+ *
+ *  The `_o` param exists because the endpoint reflects the request Origin
+ *  into Access-Control-Allow-Origin but its CDN caches responses for 24h
+ *  keyed by URL alone, with no Vary: Origin — so a response cached for one
+ *  origin fails every other origin's CORS check until it expires. Keying
+ *  the URL by our own origin gives each origin a private cache entry.
+ *  (JSONP never hit this: its random callback name made every URL unique.) */
 async function lookupIds(itunesIds: ReadonlyArray<number>, timeoutMs = 10_000): Promise<ITunesLookupResult['results']> {
   const idsLabel = itunesIds.join(',');
-  const r = await fetch(`https://itunes.apple.com/lookup?id=${idsLabel}`, {
+  const originKey = typeof location === 'undefined' ? 'node' : encodeURIComponent(location.origin);
+  const r = await fetch(`https://itunes.apple.com/lookup?id=${idsLabel}&_o=${originKey}`, {
     signal: AbortSignal.timeout(timeoutMs),
   });
   if (!r.ok) throw new Error(`iTunes lookup failed for ${idsLabel}: HTTP ${r.status}`);
