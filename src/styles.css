@@ -3123,8 +3123,15 @@ h1 {
 }
 .intro-start:hover { filter: brightness(1.05); }
 
-/* displayOnly tiles never pulse on focus or click — kill the pointer feedback
-   on the buttons so the demo doesn't suggest interactivity. */
+/* displayOnly tiles never pulse on focus or click — reject pointer input
+   entirely so the demo doesn't suggest interactivity. Without this, clicking
+   a demo PLAY/CUE button focuses it (Chromium), stealing focus from the
+   card's real NEXT button (#130). Keyboard is already excluded via
+   tabIndex=-1. Same for the rules card's fake SUBMIT. */
+.tile.display-only,
+.intro-submit {
+  pointer-events: none;
+}
 .tile.display-only {
   cursor: default;
 }
