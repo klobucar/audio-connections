@@ -35,7 +35,7 @@ const puzzle: PuzzleContent = {
       tracks: [
         { id: 1440759940, artist: 'Queens of the Stone Age', title: 'Go with the Flow', note: 'Songs for the Deaf (2002)' },
         { id: 1440852198, artist: 'Nine Inch Nails', title: 'The Hand That Feeds', note: 'With Teeth (2005)' },
-        { id: 203998301, artist: 'Tenacious D', title: 'Beelzeboss (The Final Showdown)', note: 'The Pick of Destiny (2006) — also voices Satan' },
+        { id: 1005716219, artist: 'Tenacious D', title: 'Beelzeboss (The Final Showdown)', note: 'The Pick of Destiny (2006) — also voices Satan' },
         { id: 1852692498, artist: 'The Prodigy', title: 'Run with the Wolves', note: 'Invaders Must Die (2009)' },
       ],
     },
