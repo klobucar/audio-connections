@@ -29,21 +29,28 @@ const PUZZLE_FILE_RE = /^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*\.ts$/;
  *  <base>api/v0/puzzle.json (i.e. /api/v0/puzzle.json on the canonical site). */
 const OUT_FILE = 'api/v0/puzzle.json';
 
-async function loadContentBySlug(dir: string): Promise<Map<string, PuzzleContent>> {
+async function loadContentBySlug(
+  dir: string,
+  bust?: string | number,
+): Promise<Map<string, PuzzleContent>> {
   const out = new Map<string, PuzzleContent>();
   const files = readdirSync(dir)
     .filter((f) => f !== 'template.ts' && PUZZLE_FILE_RE.test(f))
     .sort();
   for (const f of files) {
     const slug = f.replace(/\.ts$/, '');
-    const mod = (await import(pathToFileURL(join(dir, f)).href)) as { default: PuzzleContent };
+    // A `?v=` query makes Node treat each load as a distinct module specifier,
+    // busting the ESM import cache so dev re-reads edited files every request.
+    // Omitted for the build path, where a fresh process needs no busting.
+    const href = pathToFileURL(join(dir, f)).href + (bust !== undefined ? `?v=${bust}` : '');
+    const mod = (await import(href)) as { default: PuzzleContent };
     out.set(slug, mod.default);
   }
   return out;
 }
 
-async function buildPayload(dir: string): Promise<string> {
-  const contentBySlug = await loadContentBySlug(dir);
+async function buildPayload(dir: string, bust?: string | number): Promise<string> {
+  const contentBySlug = await loadContentBySlug(dir, bust);
 
   const resolved = resolve(schedule, contentBySlug, LAUNCH_EPOCH);
   const puzzles = resolved.map((r) => ({
@@ -81,12 +88,32 @@ async function buildPayload(dir: string): Promise<string> {
 export function emitPuzzleJson(opts: { dir?: string } = {}): Plugin {
   const dir =
     opts.dir ?? fileURLToPath(new URL('../src/puzzles', import.meta.url));
+  // Same path the built asset lands at, so dev + prod fetch identically.
+  const urlPath = '/' + OUT_FILE;
   return {
     name: 'emit-puzzle-json',
-    apply: 'build',
+    // Build: write the static asset into dist/.
     async generateBundle() {
       const source = await buildPayload(dir);
       this.emitFile({ type: 'asset', fileName: OUT_FILE, source });
+    },
+    // Dev: serve the same payload at the same URL so `npm run dev` exposes the
+    // catalogue (including the unscheduled backlog) to external tooling. The
+    // per-request `bust` token re-evaluates every puzzle module on each load, so
+    // edits (and new files) show up immediately without a dev restart.
+    configureServer(server) {
+      let bust = 0;
+      server.middlewares.use((req, res, next) => {
+        if ((req.url ?? '').split('?')[0] !== urlPath) return next();
+        buildPayload(dir, ++bust).then(
+          (source) => {
+            res.setHeader('Content-Type', 'application/json; charset=utf-8');
+            res.setHeader('Cache-Control', 'no-store');
+            res.end(source);
+          },
+          (err) => next(err),
+        );
+      });
     },
   };
 }
