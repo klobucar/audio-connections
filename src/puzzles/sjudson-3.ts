@@ -24,7 +24,7 @@ const puzzle: PuzzleContent = {
         { id: 301649414, artist: 'Chic', title: 'Good Times', note: '' },
         { id: 281713751, artist: 'Sister Sledge', title: 'He\'s the Greatest Dancer', note: '' },
         { id: 1452791458, artist: 'Diana Ross', title: 'Upside Down', note: '' },
-        { id: 80815209, artist: 'Madonna', title: 'Material Girl', note: '' },
+        { id: 80815209, artist: 'Madonna', title: 'Material Girl', note: 'Like a Virgin (prod. Nile Rodgers; Chic rhythm section played)' },
       ],
     },
     {
