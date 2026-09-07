@@ -3637,3 +3637,5 @@ h1 {
 .settings-card .stats-card { color: var(--text-primary); }
 .settings-card .stats-grid dt,
 .settings-card .stats-dist-title { color: var(--text-secondary); opacity: 1; }
+/* The 460px card can't fit numbers and bars side by side; stack them. */
+.settings-card .stats-card { grid-template-columns: 1fr; }
