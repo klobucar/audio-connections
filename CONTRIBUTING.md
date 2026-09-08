@@ -6,6 +6,7 @@ For puzzle submissions, see [PUZZLE_AUTHORS.md](./PUZZLE_AUTHORS.md). This doc i
 
 - `src/` — application code (React + TypeScript, built with Vite).
 - `src/puzzles/` — one TypeScript file per puzzle, content only, named for its author (see PUZZLE_AUTHORS.md). Day numbers and dates are derived from `src/schedule.ts`, not stored in the files.
+- `src/builder/` — the dev-only puzzle builder page (`/?mode=builder` under `npm run dev`; not in the production bundle). Its server side is `vite-plugins/builder-dev.ts` + `builder-ops.ts`, its CLI `scripts/puzzle.ts`. See docs/puzzle-builder.md.
 - `tests/` — Playwright end-to-end tests.
 - `vite-plugins/`, `public/`, `icons/` — build assets.
 - `.github/workflows/` — CI definitions.
@@ -24,6 +25,7 @@ npm test               Playwright end-to-end. ~15s. Builds once and serves it wi
 npm run validate       Composite for puzzle authors: npm run typecheck + test:unit + test:itunes + test:past-days.
 npm run test:past-days Fails if you moved an already-released puzzle (reorder/rename/re-date). Diffs against origin/main.
 npm run check:reuse   Maintainer-only. Lists cross-puzzle reuse still worth acting on: a category label repeated within 45 days, an iTunes id or song within 14 days, an artist within 7. Names future days, so not part of validate.
+npm run puzzle        Terminal side of the puzzle builder (draft in .puzzle-draft.json, shared with /?mode=builder on the dev server). See docs/puzzle-builder.md.
 npm run schedule:preview  Print the resolved schedule, backlog count, and warnings (thin runway, calendar gaps). Read-only.
 npm run backlog:preview   Print the unscheduled puzzle backlog list and scheduling next step.
 ```

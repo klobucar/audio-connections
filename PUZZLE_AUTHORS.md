@@ -21,6 +21,12 @@ Each puzzle lives in its own file under `src/puzzles/`, named for you: `src/puzz
 
 ## Writing your puzzle
 
+### The easy way: the puzzle builder
+
+Run `npm run dev` and open <http://localhost:5173/?mode=builder>. Search iTunes, play the previews, drop tracks onto sides A–D, name the categories, and export the file — it finds the IDs, refuses tracks with no preview, and runs the same reuse checks maintainers run. There is a terminal version too (`npm run puzzle`), which works well with an AI agent. See [docs/puzzle-builder.md](./docs/puzzle-builder.md).
+
+The rest of this section is the manual route; everything it says about the file still applies to an exported one.
+
 1. Copy `src/puzzles/template.ts` to `src/puzzles/<your-github-handle>-N.ts`.
 2. Fill in:
    - **`author`**: your name.

@@ -6,6 +6,7 @@ import basicSsl from '@vitejs/plugin-basic-ssl';
 import { checkPuzzles } from './vite-plugins/check-puzzles.ts';
 import { emitPuzzleJson } from './vite-plugins/emit-puzzle-json.ts';
 import { emitScheduleManifest } from './vite-plugins/emit-schedule-manifest.ts';
+import { builderDev } from './vite-plugins/builder-dev.ts';
 
 // Opt-in HTTPS for testing PWA install + DOM secure-context APIs from a
 // phone on the LAN. Vite 5 dropped the --https CLI flag, so we toggle the
@@ -100,7 +101,7 @@ function injectCsp(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [react(), checkPuzzles(), emitPuzzleJson(), emitScheduleManifest(), emitCname(), injectCsp(), ...(httpsEnabled ? [basicSsl()] : [])],
+  plugins: [react(), checkPuzzles(), emitPuzzleJson(), emitScheduleManifest(), builderDev(), emitCname(), injectCsp(), ...(httpsEnabled ? [basicSsl()] : [])],
   base: resolveBase(),
   server: { port: 5173 },
 });

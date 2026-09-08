@@ -11,13 +11,10 @@ const fail = (source: string, msg: string): never => {
   throw new PuzzleSchemaError(`${source}: ${msg}`);
 };
 
-/** Soft cap on `Puzzle.constraint` length. The mobile layouts use the
- *  modal (which wraps any length) and the desktop pill sits in a 940px
- *  chrome row, so this isn't strictly a layout guard anymore — it's a
- *  taste guard. The "DJ scribbled note" framing wants a phrase, not a
- *  paragraph. 80 chars ≈ a single sentence and still fits the desktop
- *  pill on one line at 11px mono. */
-export const MAX_CONSTRAINT_LENGTH = 80;
+// Re-exported from its own module so the Node-side puzzle builder can share
+// it without pulling in this file's import.meta.glob.
+export { MAX_CONSTRAINT_LENGTH } from './constraint';
+import { MAX_CONSTRAINT_LENGTH } from './constraint';
 
 /** Validate a puzzle FILE's exported content. Files carry no day/date/releaseAt
  *  anymore — those are derived from src/schedule.ts — so this checks only the

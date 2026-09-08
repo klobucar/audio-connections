@@ -101,3 +101,6 @@ $RECYCLE.BIN/
 # PWA icons + OG share image ship with the build.
 !public/icons/*.png
 !public/og-image.png
+
+# Puzzle builder draft (dev only; see docs/puzzle-builder.md)
+.puzzle-draft.json
