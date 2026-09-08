@@ -23,6 +23,9 @@ The builder does not exist in the deployed site. `?mode=builder` on connections.
 ```
 npm run puzzle -- show                       print the draft
 npm run puzzle -- search "thong song"        iTunes hits: id, artist — title [album, year]; ✗ = no preview
+npm run puzzle -- search "Sisqo - Thong Song" "Ginuwine - Pony" "TLC - No Scrubs"
+                                             several searches in one call, run concurrently, grouped by term
+                                             (10 hits per term; --limit=25 for more)
 npm run puzzle -- add A 1440891230           fill the next empty slot on side A
 npm run puzzle -- add C3 1440891230          fill (or replace) a specific slot
 npm run puzzle -- remove B2
@@ -41,7 +44,7 @@ Add `--json` to any command for structured output. Slots are `A1`–`D4`; a bare
 
 If you are an agent helping someone build a puzzle in this repo, use the CLI above rather than calling the iTunes API yourself.
 
-- `npm run puzzle -- search "<artist> <title>" --json` returns `[{ id, artist, title, album, year, previewUrl? }]`. Only entries with a `previewUrl` are usable.
+- `npm run puzzle -- search "<artist> <title>" ["<artist> <title>" ...] --json` returns `[{ term, hits: [{ id, artist, title, album, year, previewUrl? }], error? }]`, one entry per term in the order given. Pass every candidate for a category in one call rather than one search per call. Only hits with a `previewUrl` are usable. Quote each term; unquoted words are separate searches.
 - `npm run puzzle -- add <side> <id>` validates the id for you. Never write ids into the draft file or a puzzle file by hand.
 - `npm run puzzle -- check --json` returns `{ filled, problems[], noPreview[], reuse[], priorUses[] }`. `problems` and `noPreview` block export. `reuse` and `priorUses` are judgment calls for the human — surface them, don't silently work around them.
 - Names, notes and the constraint go through `set` and `note`; you can also edit `.puzzle-draft.json` directly, the page will notice.

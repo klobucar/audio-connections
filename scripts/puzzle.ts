@@ -4,7 +4,8 @@
 // subcommand with readable output (add --json for machine output).
 //
 //   npm run puzzle -- show                     current draft
-//   npm run puzzle -- search "thong song"      iTunes hits with ids
+//   npm run puzzle -- search "thong song"      iTunes hits with ids (10 per term; --limit=25 for more)
+//   npm run puzzle -- search "Sisqo - Thong Song" "Ginuwine - Pony"   several searches at once, grouped
 //   npm run puzzle -- add A 1440891230         fill next empty slot on side A (or A3 for a slot)
 //   npm run puzzle -- remove B2
 //   npm run puzzle -- set author "Your Name"
@@ -33,6 +34,8 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const argv = process.argv.slice(2);
 const JSON_OUT = argv.includes('--json');
 const OVERWRITE = argv.includes('--overwrite');
+const limitArg = argv.find((a) => a.startsWith('--limit='))?.slice('--limit='.length);
+const LIMIT = limitArg && Number.isFinite(Number(limitArg)) ? Number(limitArg) : 10;
 const args = argv.filter((a) => !a.startsWith('--'));
 const [cmd, ...rest] = args;
 
@@ -80,16 +83,27 @@ async function main(): Promise<void> {
       return out('Draft cleared.', d);
     }
     case 'search': {
-      const term = rest.join(' ').trim();
-      if (!term) fail('usage: search <words>');
-      const hits = await searchItunes(term, 25);
-      const lines = hits.map((h) => `${String(h.id).padStart(11)}  ${h.previewUrl ? ' ' : '✗'}  ${h.artist} — ${h.title}  [${h.album}${h.year ? `, ${h.year}` : ''}]`);
-      return out(
-        hits.length
-          ? `${lines.join('\n')}\n\n(✗ = no preview clip; unusable)  →  npm run puzzle -- add <side> <id>`
-          : 'No song matches. Try fewer words, or the title alone.',
-        hits,
+      // Each argument is one search, so an agent can look up a whole
+      // candidate list in one call: search "Artist - Title" "Other - Title".
+      const terms = rest.map((t) => t.trim()).filter(Boolean);
+      if (terms.length === 0) fail('usage: search "<term>" ["<term>" ...] [--limit N]   (quote multi-word terms)');
+      const results = await Promise.all(
+        terms.map(async (term) => {
+          try {
+            return { term, hits: await searchItunes(term, LIMIT) };
+          } catch (e) {
+            return { term, hits: [], error: e instanceof Error ? e.message : String(e) };
+          }
+        }),
       );
+      const blocks = results.map((r) => {
+        const head = terms.length > 1 ? `## ${r.term}\n` : '';
+        if (r.error) return `${head}(search failed: ${r.error})`;
+        if (r.hits.length === 0) return `${head}No song matches. Try fewer words, or the title alone.`;
+        const lines = r.hits.map((h) => `${String(h.id).padStart(11)}  ${h.previewUrl ? ' ' : '✗'}  ${h.artist} — ${h.title}  [${h.album}${h.year ? `, ${h.year}` : ''}]`);
+        return head + lines.join('\n');
+      });
+      return out(`${blocks.join('\n\n')}\n\n(✗ = no preview clip; unusable)  →  npm run puzzle -- add <side> <id>`, results);
     }
     case 'add': {
       const [slot, idRaw] = rest;
